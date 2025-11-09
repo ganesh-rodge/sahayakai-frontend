@@ -31,6 +31,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               <li><a href="#services" className="hover:text-accent transition-colors">Services</a></li>
               <li><a href="#resources" className="hover:text-accent transition-colors">Resources</a></li>
               <li><a href="#features" className="hover:text-accent transition-colors">Features</a></li>
+              <li><button onClick={() => navigate('student-dashboard')} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Student Dashboard</button></li>
             </ul>
           </div>
 
