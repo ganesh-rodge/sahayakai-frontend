@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Target, MessageCircle, Map } from 'lucide-react';
+import { Target, MessageCircle, Map, BookOpen } from 'lucide-react';
 
 interface OnboardingFlowProps {
-  onComplete: (data: { learningGoal: string; experience: string[]; timeCommitment: string }) => void;
+  onComplete: (data: { 
+    learningGoal: string; 
+    experience: string[]; 
+    timeCommitment: string;
+    skillLevel: string;
+    preferredTopics: string[];
+  }) => void;
 }
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
@@ -11,12 +17,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [learningGoal, setLearningGoal] = useState('');
   const [experience, setExperience] = useState<string[]>([]);
   const [timeCommitment, setTimeCommitment] = useState('');
+  const [skillLevel, setSkillLevel] = useState('');
+  const [preferredTopics, setPreferredTopics] = useState<string[]>([]);
 
   const handleNext = () => {
-    if (step < 3) {
+    if (step < 5) {
       setStep(step + 1);
     } else {
-      onComplete({ learningGoal, experience, timeCommitment });
+      onComplete({ learningGoal, experience, timeCommitment, skillLevel, preferredTopics });
     }
   };
 
@@ -29,11 +37,13 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const isStepValid = () => {
     if (step === 1) return learningGoal.trim().length > 0;
     if (step === 2) return experience.length > 0;
-    if (step === 3) return timeCommitment.length > 0;
+    if (step === 3) return skillLevel.length > 0;
+    if (step === 4) return preferredTopics.length > 0;
+    if (step === 5) return timeCommitment.length > 0;
     return false;
   };
 
-  const progress = (step / 3) * 100;
+  const progress = (step / 5) * 100;
 
   return (
     <div className="min-h-screen bg-dark-primary flex items-center justify-center px-4">
@@ -48,43 +58,21 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           <div className="flex items-center justify-center gap-2 mb-4">
             <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-16 w-auto" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Welcome to PathWise</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome to Sahayak AI</h1>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-8">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className={`flex items-center gap-2 ${step >= 1 ? 'text-accent' : 'text-gray-500'}`}>
-              <Target className="w-5 h-5" />
-              <span className="text-sm font-medium hidden sm:inline">Goal</span>
-            </div>
-            <div className="h-1 w-24 bg-dark-tertiary rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-accent"
-                initial={{ width: 0 }}
-                animate={{ width: step >= 2 ? '100%' : '0%' }}
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-            <div className={`flex items-center gap-2 ${step >= 2 ? 'text-accent' : 'text-gray-500'}`}>
-              <MessageCircle className="w-5 h-5" />
-              <span className="text-sm font-medium hidden sm:inline">Questions</span>
-            </div>
-            <div className="h-1 w-24 bg-dark-tertiary rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-accent"
-                initial={{ width: 0 }}
-                animate={{ width: step >= 3 ? '100%' : '0%' }}
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-            <div className={`flex items-center gap-2 ${step >= 3 ? 'text-accent' : 'text-gray-500'}`}>
-              <Map className="w-5 h-5" />
-              <span className="text-sm font-medium hidden sm:inline">Roadmap</span>
-            </div>
+          <div className="text-center text-sm text-gray-400 mb-4">
+            Question {step} of 5 <span className="text-accent">• {Math.round(progress)}% complete</span>
           </div>
-          <div className="text-center text-sm text-gray-400">
-            Progress: {step}/3 <span className="text-accent">• {Math.round(progress)}% complete</span>
+          <div className="h-2 bg-dark-tertiary rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-accent to-accent-light"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
           </div>
         </div>
 
@@ -104,8 +92,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   <Target className="w-8 h-8 text-accent" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-center mb-2">Question 1 of 3</h2>
-              <p className="text-gray-400 text-center mb-8">Help us personalize your learning experience</p>
+              <h2 className="text-2xl font-bold text-center mb-2">What's Your Goal?</h2>
+              <p className="text-gray-400 text-center mb-8">Tell us what you want to achieve</p>
               
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-300">
@@ -115,7 +103,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   type="text"
                   value={learningGoal}
                   onChange={(e) => setLearningGoal(e.target.value)}
-                  placeholder="e.g., I want to become a Software Developer"
+                  placeholder="e.g., I want to become a Full Stack Developer"
                   className="w-full px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:outline-none focus:border-accent transition-colors text-white"
                   autoFocus
                 />
@@ -131,12 +119,12 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   <MessageCircle className="w-8 h-8 text-accent" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-center mb-2">Question 2 of 3</h2>
-              <p className="text-gray-400 text-center mb-8">Help us personalize your learning experience</p>
+              <h2 className="text-2xl font-bold text-center mb-2">Your Experience</h2>
+              <p className="text-gray-400 text-center mb-8">Which programming languages are you already familiar with?</p>
               
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-300">
-                  Which programming languages are you already familiar with?
+                  Select all that apply
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {['JavaScript', 'Python', 'Java', 'C++', 'C#', 'TypeScript', 'Ruby', 'Go', 'None'].map((lang) => (
@@ -167,38 +155,129 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             </div>
           )}
 
-          {/* Step 3: Time Commitment */}
+          {/* Step 3: Skill Level */}
           {step === 3 && (
+            <div>
+              <div className="flex items-center justify-center mb-6">
+                <div className="p-4 bg-accent/20 rounded-full">
+                  <Target className="w-8 h-8 text-accent" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-center mb-2">Your Skill Level</h2>
+              <p className="text-gray-400 text-center mb-8">How would you rate your current programming skills?</p>
+              
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-300">
+                  Select your level
+                </label>
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    { value: 'beginner', label: 'Beginner', desc: 'Just starting my coding journey' },
+                    { value: 'intermediate', label: 'Intermediate', desc: 'Comfortable with basic concepts' },
+                    { value: 'advanced', label: 'Advanced', desc: 'Experienced with multiple languages' },
+                    { value: 'expert', label: 'Expert', desc: 'Professional developer' },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSkillLevel(option.value)}
+                      className={`px-4 py-4 rounded-lg border transition-all text-left ${
+                        skillLevel === option.value
+                          ? 'bg-accent/20 border-accent text-accent'
+                          : 'bg-dark-tertiary border-gray-700 text-gray-300 hover:border-accent/50'
+                      }`}
+                    >
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-sm text-gray-400">{option.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Preferred Topics */}
+          {step === 4 && (
+            <div>
+              <div className="flex items-center justify-center mb-6">
+                <div className="p-4 bg-accent/20 rounded-full">
+                  <BookOpen className="w-8 h-8 text-accent" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-center mb-2">Areas of Interest</h2>
+              <p className="text-gray-400 text-center mb-8">Which topics would you like to focus on?</p>
+              
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-300">
+                  Select all that interest you
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    'Web Development',
+                    'Mobile Development',
+                    'Data Science',
+                    'Machine Learning',
+                    'DevOps',
+                    'Cloud Computing',
+                    'Cybersecurity',
+                    'Game Development',
+                    'UI/UX Design',
+                  ].map((topic) => (
+                    <button
+                      key={topic}
+                      onClick={() => {
+                        setPreferredTopics((prev) =>
+                          prev.includes(topic)
+                            ? prev.filter((t) => t !== topic)
+                            : prev.concat(topic)
+                        );
+                      }}
+                      className={`px-4 py-3 rounded-lg border transition-all ${
+                        preferredTopics.includes(topic)
+                          ? 'bg-accent/20 border-accent text-accent'
+                          : 'bg-dark-tertiary border-gray-700 text-gray-300 hover:border-accent/50'
+                      }`}
+                    >
+                      {topic}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Time Commitment */}
+          {step === 5 && (
             <div>
               <div className="flex items-center justify-center mb-6">
                 <div className="p-4 bg-accent/20 rounded-full">
                   <Map className="w-8 h-8 text-accent" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-center mb-2">Question 3 of 3</h2>
-              <p className="text-gray-400 text-center mb-8">Help us personalize your learning experience</p>
+              <h2 className="text-2xl font-bold text-center mb-2">Time Commitment</h2>
+              <p className="text-gray-400 text-center mb-8">How much time can you dedicate to learning per week?</p>
               
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-300">
-                  How much time can you dedicate to learning per week?
+                  Select your availability
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
-                    { value: '1-5', label: '1-5 hours/week' },
-                    { value: '5-10', label: '5-10 hours/week' },
-                    { value: '10-20', label: '10-20 hours/week' },
-                    { value: '20+', label: '20+ hours/week' },
+                    { value: '1-5', label: '1-5 hours/week', desc: 'Light learning pace' },
+                    { value: '5-10', label: '5-10 hours/week', desc: 'Moderate commitment' },
+                    { value: '10-20', label: '10-20 hours/week', desc: 'Serious learner' },
+                    { value: '20+', label: '20+ hours/week', desc: 'Intensive study' },
                   ].map((option) => (
                     <button
                       key={option.value}
                       onClick={() => setTimeCommitment(option.value)}
-                      className={`px-4 py-3 rounded-lg border transition-all ${
+                      className={`px-4 py-4 rounded-lg border transition-all text-left ${
                         timeCommitment === option.value
                           ? 'bg-accent/20 border-accent text-accent'
                           : 'bg-dark-tertiary border-gray-700 text-gray-300 hover:border-accent/50'
                       }`}
                     >
-                      {option.label}
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-sm text-gray-400">{option.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -225,14 +304,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   : 'bg-gray-700 text-gray-500 cursor-not-allowed'
               }`}
             >
-              {step === 3 ? 'Create Roadmap' : 'Next'}
+              {step === 5 ? 'Create Roadmap' : 'Next'}
             </button>
           </div>
         </motion.div>
-
-        <div className="text-center mt-6 text-sm text-gray-500">
-          <p>Progress: {step}/3 • {Math.round(progress)}% complete</p>
-        </div>
       </motion.div>
     </div>
   );

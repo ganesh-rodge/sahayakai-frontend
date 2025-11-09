@@ -38,14 +38,8 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
       >
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo and Mobile Menu */}
+            {/* Logo */}
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-dark-tertiary transition-colors"
-              >
-                {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
               <motion.div
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.05 }}
@@ -59,9 +53,41 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
               </motion.div>
             </div>
 
-            {/* User Info */}
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-3 bg-dark-tertiary px-4 py-2 rounded-full">
+            {/* Navigation Menu - Desktop */}
+            <div className="hidden md:flex items-center gap-2">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentPage === item.id;
+                return (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => handleNavigate(item.id as any)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-accent/20 to-accent-light/20 text-accent border border-accent/30'
+                        : 'text-gray-400 hover:bg-dark-tertiary hover:text-white'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-dark-tertiary transition-colors"
+            >
+              {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+
+            {/* User Info & Logout - Desktop */}
+            <div className="hidden md:flex items-center gap-4">
+              <div className="flex items-center gap-3 bg-dark-tertiary px-4 py-2 rounded-full">
                 <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center text-dark-primary font-bold">
                   {userName.charAt(0).toUpperCase()}
                 </div>
@@ -115,14 +141,14 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
         {isSidebarOpen && (
           <>
             <motion.div
-              className="lg:hidden fixed inset-0 z-40 top-16 bg-black/50"
+              className="md:hidden fixed inset-0 z-40 top-16 bg-black/50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSidebarOpen(false)}
             />
             <motion.aside
-              className="lg:hidden fixed left-0 top-16 bottom-0 w-64 bg-dark-secondary border-r border-gray-800 flex flex-col z-40"
+              className="md:hidden fixed left-0 top-16 bottom-0 w-64 bg-dark-secondary border-r border-gray-800 flex flex-col z-40"
               initial={{ x: -300 }}
               animate={{ x: 0 }}
               exit={{ x: -300 }}
@@ -152,14 +178,35 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
                   );
                 })}
               </nav>
+              
+              {/* Mobile User Info & Logout */}
+              <div className="p-4 border-t border-gray-800 space-y-3">
+                <div className="flex items-center gap-3 bg-dark-tertiary px-4 py-3 rounded-lg">
+                  <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center text-dark-primary font-bold">
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">{userName}</div>
+                    <div className="text-xs text-gray-400">{userEmail}</div>
+                  </div>
+                </div>
+                <motion.button
+                  onClick={onLogout}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition-all"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">Sign Out</span>
+                </motion.button>
+              </div>
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="lg:pl-64 pt-16 min-h-screen">
-        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="pt-16 min-h-screen">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
           {children}
         </div>
       </main>

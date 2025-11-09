@@ -211,7 +211,13 @@ export default function StudentDashboard({ onLogout }: StudentDashboardProps) {
 
   const hasRoadmap = weeksData.length > 0;
 
-  const handleOnboardingComplete = (data: { learningGoal: string; experience: string[]; timeCommitment: string }) => {
+  const handleOnboardingComplete = (data: { 
+    learningGoal: string; 
+    experience: string[]; 
+    timeCommitment: string;
+    skillLevel: string;
+    preferredTopics: string[];
+  }) => {
     // Generate roadmap based on onboarding data
     const newRoadmap = generateRoadmap(data.learningGoal, data.experience, data.timeCommitment);
     setWeeksData(newRoadmap);
