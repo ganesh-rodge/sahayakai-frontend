@@ -50,6 +50,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               <li><button onClick={() => navigate('privacy')} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Privacy</button></li>
               <li><button onClick={() => navigate('terms')} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Terms</button></li>
               <li><button onClick={() => navigate('security')} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Security</button></li>
+              <li><button onClick={() => navigate('student-dashboard')} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Student Dashboard</button></li>
               <li><button onClick={() => navigate('teacher-dashboard')} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Teacher Dashboard</button></li>
             </ul>
           </div>
