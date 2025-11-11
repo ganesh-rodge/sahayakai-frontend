@@ -1,28 +1,28 @@
 import { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import About from './components/About';
-import Services from './components/Services';
-import Resources from './components/Resources';
-import Features from './components/Features';
-import Footer from './components/Footer';
-import LoginPage from './components/LoginPage';
-import LoginTeacherPage from './pages/LoginTeacherPage';
-import LoginStudentPage from './pages/LoginStudentPage';
-import SignupPage from './components/SignupPage';
-import StudentExplore from './pages/StudentExplore';
-import TeacherExplore from './pages/TeacherExplore';
-import HelpCenter from './pages/support/HelpCenter';
-import Contact from './pages/support/Contact';
-import FAQ from './pages/support/FAQ';
-import Community from './pages/support/Community';
-import Privacy from './pages/legal/Privacy';
-import Terms from './pages/legal/Terms';
-import Security from './pages/legal/Security';
-import TeacherDashboard from './pages/TeacherDashboard';
-import StudentDashboard from './components/StudentDashboard';
+import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
+import About from '../components/About';
+import Services from '../components/Services';
+import Resources from '../components/Resources';
+import Features from '../components/Features';
+import Footer from '../components/Footer';
+import LoginPage from '../components/LoginPage';
+import LoginTeacherPage from '../pages/LoginTeacherPage';
+import LoginStudentPage from '../pages/LoginStudentPage';
+import SignupPage from '../components/SignupPage';
+import StudentExplore from '../pages/StudentExplore';
+import TeacherExplore from '../pages/TeacherExplore';
+import HelpCenter from '../pages/support/HelpCenter';
+import Contact from '../pages/support/Contact';
+import FAQ from '../pages/support/FAQ';
+import Community from '../pages/support/Community';
+import Privacy from '../pages/legal/Privacy';
+import Terms from '../pages/legal/Terms';
+import Security from '../pages/legal/Security';
+import TeacherDashboard from '../pages/TeacherDashboard';
+import StudentDashboard from '../components/StudentDashboard';
 
-type PageType = 'home' | 'login' | 'login-teacher' | 'login-student' | 'signup' | 'signup-teacher' | 'signup-student' | 'student-explore' | 'teacher-explore' | 'help' | 'contact' | 'faq' | 'community' | 'privacy' | 'terms' | 'security' | 'teacher-dashboard' | 'student-dashboard';
+export type PageType = 'home' | 'login' | 'login-teacher' | 'login-student' | 'signup' | 'signup-teacher' | 'signup-student' | 'student-explore' | 'teacher-explore' | 'help' | 'contact' | 'faq' | 'community' | 'privacy' | 'terms' | 'security' | 'teacher-dashboard' | 'student-dashboard';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -57,25 +57,22 @@ function App() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const handleLogin = async (role: 'teacher' | 'student', identifier: string, password: string) => {
+  const handleLogin = async (role: 'teacher' | 'student', username: string, password: string) => {
     setLoginError(null);
     setLoginLoading(true);
     try {
-      // Try calling a backend login endpoint if available
       const res = await fetch(`/api/auth/${role}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, password })
+        body: JSON.stringify({ username, password })
       });
 
       if (res.ok) {
-        // successful login
         navigateToPage('home');
         return;
       }
 
       if (res.status === 404) {
-        // account not found -> redirect to signup for that role
         navigateToPage(role === 'teacher' ? 'signup-teacher' : 'signup-student');
         return;
       }
@@ -84,17 +81,14 @@ function App() {
         setLoginError('Invalid credentials.');
         return;
       }
-
-      // other non-OK response: fallthrough to heuristic below
     } catch (err) {
-      // network or endpoint not present — fall back to heuristic
+      // ignore and fall back to heuristic
     } finally {
       setLoginLoading(false);
     }
 
-    // Fallback heuristic when no backend is available:
-    // If identifier looks like an email or has length and password is present, assume account exists.
-    if ((identifier.includes('@') || identifier.length > 2) && password.length >= 1) {
+    // Fallback heuristic: if username length seems valid (>2) treat as existing; else redirect to signup
+    if (username.length > 2 && password.length >= 1) {
       navigateToPage('home');
     } else {
       navigateToPage(role === 'teacher' ? 'signup-teacher' : 'signup-student');
@@ -106,11 +100,11 @@ function App() {
   }
 
   if (currentPage === 'login-teacher') {
-    return <LoginTeacherPage onBack={() => navigateToPage('login')} onLogin={(identifier, password) => handleLogin('teacher', identifier, password)} loading={loginLoading} error={loginError} />;
+    return <LoginTeacherPage onBack={() => navigateToPage('login')} onLogin={(username: string, password: string) => handleLogin('teacher', username, password)} onSignup={() => navigateToPage('signup-teacher')} loading={loginLoading} error={loginError} />;
   }
 
   if (currentPage === 'login-student') {
-    return <LoginStudentPage onBack={() => navigateToPage('login')} onLogin={(identifier, password) => handleLogin('student', identifier, password)} loading={loginLoading} error={loginError} />;
+    return <LoginStudentPage onBack={() => navigateToPage('login')} onLogin={(username: string, password: string) => handleLogin('student', username, password)} onSignup={() => navigateToPage('signup-student')} loading={loginLoading} error={loginError} />;
   }
 
   if (currentPage === 'signup') {
@@ -126,18 +120,18 @@ function App() {
   }
 
   if (currentPage === 'student-explore') {
-    return <StudentExplore onBack={() => navigateToPage('home')} onGetStarted={() => navigateToPage('signup')} />;
+    return <StudentExplore onBack={() => navigateToPage('home')} onGetStarted={() => navigateToPage('signup-student')} />;
   }
 
   if (currentPage === 'teacher-explore') {
-    return <TeacherExplore onBack={() => navigateToPage('home')} onGetStarted={() => navigateToPage('signup')} />;
+    return <TeacherExplore onBack={() => navigateToPage('home')} onGetStarted={() => navigateToPage('signup-teacher')} />;
   }
 
   if (currentPage === 'help') {
     return (
       <div className="bg-dark-primary">
-        <Navbar onLoginClick={() => navigateToPage('login')} onSignupClick={() => navigateToPage('signup')} onLogoClick={() => navigateToPage('home')} />
-        <HelpCenter />
+  <Navbar onLoginClick={() => navigateToPage('login')} onSignupClick={() => navigateToPage('signup')} onLogoClick={() => navigateToPage('home')} />
+  <HelpCenter onNavigate={(page) => navigateToPage(page as PageType)} />
         <Footer onNavigate={(page) => navigateToPage(page as PageType)} />
       </div>
     );
@@ -221,7 +215,7 @@ function App() {
       />
       <About />
       <Services />
-      <Resources />
+  <Resources onNavigate={(page) => navigateToPage(page as PageType)} />
       <Features />
       <Footer onNavigate={(page) => navigateToPage(page as PageType)} />
     </div>

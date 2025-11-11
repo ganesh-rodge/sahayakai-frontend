@@ -1,5 +1,3 @@
-import logo from '../assets/logo.svg';
-
 interface FooterProps {
   onNavigate?: (page: string) => void;
 }
@@ -16,8 +14,7 @@ export default function Footer({ onNavigate }: FooterProps) {
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <img src={logo} alt="Sahayak AI" className="h-6 w-6" />
-              <span className="font-bold">Sahayak<span className="text-accent">AI</span></span>
+              <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-9 w-auto" />
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Transforming education through intelligent, adaptive learning experiences.

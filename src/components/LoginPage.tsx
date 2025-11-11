@@ -2,11 +2,12 @@ import { motion } from 'framer-motion';
 
 interface LoginPageProps {
   onBack: () => void;
-  onSignup: () => void;
+  onSignupTeacher?: () => void;
+  onSignupStudent?: () => void;
   onChooseRole?: (role: 'teacher' | 'student') => void;
 }
 
-export default function LoginPage({ onBack, onSignup, onChooseRole }: LoginPageProps) {
+export default function LoginPage({ onBack, onSignupTeacher, onSignupStudent, onChooseRole }: LoginPageProps) {
   return (
     <motion.div
       className="min-h-screen bg-dark-primary flex flex-col"
@@ -54,7 +55,7 @@ export default function LoginPage({ onBack, onSignup, onChooseRole }: LoginPageP
 
             <div className="text-center">
               <p className="text-gray-400 mb-1">Don't have an account?</p>
-              <button onClick={onSignup} className="text-accent hover:text-accent-light transition-colors font-bold text-lg">
+              <button onClick={() => onSignupTeacher?.()} className="text-accent hover:text-accent-light transition-colors font-bold text-lg">
                 Sign up.
               </button>
             </div>
@@ -89,7 +90,7 @@ export default function LoginPage({ onBack, onSignup, onChooseRole }: LoginPageP
 
             <div className="text-center">
               <p className="text-gray-400 mb-1">Don't have an account?</p>
-              <button onClick={onSignup} className="text-accent hover:text-accent-light transition-colors font-bold text-lg">
+              <button onClick={() => onSignupStudent?.()} className="text-accent hover:text-accent-light transition-colors font-bold text-lg">
                 Sign up.
               </button>
             </div>

@@ -6,18 +6,27 @@ import TeacherSignup from './TeacherSignup';
 interface SignupPageProps {
   onBack: () => void;
   onLogin: () => void;
+  /** optional initial view - if provided the signup page will open directly to that role */
+  initialView?: 'selection' | 'student' | 'teacher';
 }
 
-export default function SignupPage({ onBack, onLogin }: SignupPageProps) {
-  const [view, setView] = useState<'selection' | 'student' | 'teacher'>('selection');
+export default function SignupPage({ onBack, onLogin, initialView }: SignupPageProps) {
+  const [view, setView] = useState<'selection' | 'student' | 'teacher'>(initialView || 'selection');
   const [selectedRole, setSelectedRole] = useState<'student' | 'teacher' | null>(null);
 
+  // If the signup page was opened directly to a role via `initialView`, then
+  // the inner signup's Back should return to the previous app page (use
+  // the provided `onBack` prop). Otherwise, it should show the selection
+  // view inside the signup modal.
+  const innerBackHandler = () => setView('selection');
+  const innerBack = initialView ? onBack : innerBackHandler;
+
   if (view === 'student') {
-    return <StudentSignup onBack={() => setView('selection')} onLogin={onLogin} />;
+    return <StudentSignup onBack={innerBack} onLogin={onLogin} />;
   }
 
   if (view === 'teacher') {
-    return <TeacherSignup onBack={() => setView('selection')} onLogin={onLogin} />;
+    return <TeacherSignup onBack={innerBack} onLogin={onLogin} />;
   }
 
   return (

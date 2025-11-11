@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
 
-export default function Resources() {
+interface ResourcesProps {
+  onNavigate?: (page: string) => void;
+}
+
+export default function Resources({ onNavigate }: ResourcesProps) {
   const resources = [
     { category: 'Learning Materials', icon: '📚', items: ['Video Tutorials', 'Interactive Guides', 'Practice Exercises', 'Study Notes'] },
     { category: 'Teaching Tools', icon: '🛠️', items: ['Lesson Templates', 'Assessment Builder', 'Grade Calculator', 'Schedule Planner'] },
@@ -44,6 +48,13 @@ export default function Resources() {
                 whileHover={{ backgroundColor: "#00d4aa", color: "#0a0a0f", scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300 }}
+                onClick={() => {
+                  if (!onNavigate) return;
+                  if (resource.category === 'Learning Materials') onNavigate('student-explore');
+                  else if (resource.category === 'Teaching Tools') onNavigate('teacher-explore');
+                  else if (resource.category === 'Support') onNavigate('help');
+                }}
+                aria-label={`Explore ${resource.category}`}
               >
                 Explore
               </motion.button>

@@ -1,35 +1,34 @@
 import React, { useState } from 'react';
 
 interface Props {
-  onSubmit?: (email: string, password: string) => void;
+  onSubmit?: (username: string, password: string) => void;
   loading?: boolean;
+  serverError?: string | null;
 }
 
-export default function StudentLogin({ onSubmit, loading }: Props) {
-  const [email, setEmail] = useState('');
+export default function StudentLogin({ onSubmit, loading, serverError }: Props) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email) return setError('Please enter your email.');
-    // simple email check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError('Please enter a valid email.');
+    if (!username) return setError('Please enter your username.');
     if (!password) return setError('Please enter your password.');
-    onSubmit?.(email, password);
+    onSubmit?.(username, password);
   };
 
   return (
     <form className="space-y-5 mb-8" onSubmit={handleSubmit} noValidate>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Username</label>
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="w-full px-4 py-3 rounded-lg bg-dark-input text-white placeholder-gray-400 focus:outline-none"
-          placeholder="student@school.edu"
+          placeholder="yourusername"
           required
         />
       </div>
@@ -47,6 +46,7 @@ export default function StudentLogin({ onSubmit, loading }: Props) {
       </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
+        {serverError && <p className="text-sm text-red-400">{serverError}</p>}
 
       <button
         type="submit"

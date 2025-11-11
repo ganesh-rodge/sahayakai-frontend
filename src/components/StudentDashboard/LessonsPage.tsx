@@ -26,14 +26,11 @@ interface LessonsPageProps {
 }
 
 export default function LessonsPage({ weeks, onStartLesson, hasRoadmap, onCreateRoadmap }: LessonsPageProps) {
-  const [expandedWeeks, setExpandedWeeks] = useState<number[]>([1]); // Week 1 expanded by default
+  // Only one week expanded at a time. Null means all collapsed.
+  const [expandedWeek, setExpandedWeek] = useState<number | null>(1); // Week 1 expanded by default
 
   const toggleWeek = (weekNumber: number) => {
-    setExpandedWeeks((prev) =>
-      prev.includes(weekNumber)
-        ? prev.filter((w) => w !== weekNumber)
-        : [...prev, weekNumber]
-    );
+    setExpandedWeek(prev => (prev === weekNumber ? null : weekNumber));
   };
 
   const completedLessons = weeks.reduce((total, week) => total + week.lessonsCompleted, 0);
@@ -114,7 +111,7 @@ export default function LessonsPage({ weeks, onStartLesson, hasRoadmap, onCreate
       {/* Weeks List */}
       <div className="space-y-4">
         {weeks.map((week, weekIndex) => {
-          const isExpanded = expandedWeeks.includes(week.weekNumber);
+          const isExpanded = expandedWeek === week.weekNumber;
           const progress = Math.round((week.lessonsCompleted / week.totalLessons) * 100);
 
           return (

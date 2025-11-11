@@ -1,4 +1,8 @@
-export default function HelpCenter() {
+interface HelpCenterProps {
+  onNavigate?: (page: string) => void;
+}
+
+export default function HelpCenter({ onNavigate }: HelpCenterProps) {
   const categories = [
     {
       title: 'Getting Started',
@@ -90,7 +94,11 @@ export default function HelpCenter() {
         <div className="mt-16 bg-dark-secondary border border-gray-800 rounded-lg p-8 text-center">
           <h3 className="text-2xl font-bold mb-4">Still need help?</h3>
           <p className="text-gray-400 mb-6">Our support team is here to assist you</p>
-          <button className="px-8 py-3 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all">
+          <button
+            onClick={() => onNavigate?.('contact')}
+            className="px-8 py-3 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all"
+            aria-label="Go to Contact Support page"
+          >
             Contact Support
           </button>
         </div>

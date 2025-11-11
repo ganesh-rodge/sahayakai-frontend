@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 
 interface TeacherExploreProps {
   onBack: () => void;
@@ -7,14 +6,13 @@ interface TeacherExploreProps {
 }
 
 export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreProps) {
-  const [activeDemo, setActiveDemo] = useState<number | null>(null);
+  // Simplified view: details are always visible; no toggles or demo modal
 
   const features = [
     {
       icon: '📝',
       title: 'Content Generator',
       description: 'Create localized stories and educational content powered by AI.',
-      demoVideo: 'Generate engaging lesson content in seconds',
       capabilities: [
         'Auto-generate worksheets and assignments',
         'Create quiz questions based on topics',
@@ -27,7 +25,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       icon: '📸',
       title: 'Material Differentiator',
       description: 'Transform textbook pages into multi-level worksheets.',
-      demoVideo: 'Convert any textbook page into adaptive materials',
       capabilities: [
         'Scan and digitize textbook content',
         'Generate multiple difficulty levels',
@@ -40,7 +37,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       icon: '❓',
       title: 'Knowledge Base',
       description: 'Get instant explanations for student questions.',
-      demoVideo: 'Answer student queries with AI assistance',
       capabilities: [
         'Instant answers to student questions',
         'Multiple explanation approaches',
@@ -53,7 +49,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       icon: '🎨',
       title: 'Visual Aid Generator',
       description: 'Create blackboard-ready drawings and charts.',
-      demoVideo: 'Generate educational visuals instantly',
       capabilities: [
         'Create diagrams and flowcharts',
         'Generate mathematical graphs',
@@ -66,7 +61,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       icon: '📅',
       title: 'Lesson Planner',
       description: 'Generate structured weekly lesson plans.',
-      demoVideo: 'Plan your entire week in minutes',
       capabilities: [
         'Auto-generate lesson structures',
         'Align with curriculum standards',
@@ -79,7 +73,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       icon: '🎮',
       title: 'Game Generator',
       description: 'Create engaging educational games.',
-      demoVideo: 'Gamify learning with interactive content',
       capabilities: [
         'Build quiz-based games',
         'Create interactive challenges',
@@ -92,7 +85,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       icon: '🎤',
       title: 'Audio Reading Assessment',
       description: 'Evaluate student reading skills using speech-to-text.',
-      demoVideo: 'Assess reading proficiency automatically',
       capabilities: [
         'Record student reading sessions',
         'Analyze pronunciation and fluency',
@@ -105,7 +97,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       icon: '📊',
       title: 'Analytics Dashboard',
       description: 'Track class and individual student performance.',
-      demoVideo: 'Monitor progress with detailed insights',
       capabilities: [
         'Real-time performance metrics',
         'Identify struggling students',
@@ -115,6 +106,7 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       stats: { created: 'Live', unit: 'data' }
     }
   ];
+
 
   return (
     <div className="min-h-screen bg-dark-primary">
@@ -140,59 +132,40 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              className="bg-dark-secondary border border-gray-800 rounded-xl p-6 relative overflow-hidden"
+            <motion.article
+              key={feature.title}
+              className="bg-dark-secondary border border-gray-800 rounded-xl p-6 relative overflow-hidden flex flex-col h-full"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ scale: 1.03, borderColor: "#00d4aa" }}
+              transition={{ duration: 0.6, delay: index * 0.08 }}
+              whileHover={{ scale: 1.02, borderColor: "#00d4aa" }}
             >
-              <div className="absolute top-4 right-4">
-                <span className="text-xs text-gray-500 bg-dark-tertiary px-2 py-1 rounded">
-                  {feature.stats.created} {feature.stats.unit}
-                </span>
-              </div>
-
-              <div className="text-5xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed mb-4">{feature.description}</p>
-
-              <div className="bg-dark-tertiary border border-gray-700 rounded-lg p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 bg-accent rounded-full animate-pulse"></div>
-                  <span className="text-sm font-semibold text-gray-300">Demo Preview</span>
+              <header>
+                <div className="absolute top-4 right-4">
+                  <span className="text-xs text-gray-500 bg-dark-tertiary px-2 py-1 rounded">
+                    {feature.stats.created} {feature.stats.unit}
+                  </span>
                 </div>
-                <p className="text-xs text-gray-400 italic">{feature.demoVideo}</p>
+                <div className="text-5xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">{feature.description}</p>
+              </header>
+
+              {/* Details always visible */}
+              <div className="mt-auto pt-4 border-t border-gray-700">
+                <h4 className="text-sm font-bold mb-3 text-accent">Key Capabilities:</h4>
+                <ul className="space-y-2">
+                  {feature.capabilities.map((capability, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-gray-300 text-sm">
+                      <span className="text-accent mt-1">✓</span>
+                      <span>{capability}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-
-              {activeDemo === index && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-4 pt-4 border-t border-gray-700"
-                >
-                  <h4 className="text-sm font-bold mb-3 text-accent">Key Capabilities:</h4>
-                  <ul className="space-y-2">
-                    {feature.capabilities.map((capability, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-gray-300 text-sm">
-                        <span className="text-accent mt-1">✓</span>
-                        <span>{capability}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              )}
-
-              <button
-                onClick={() => setActiveDemo(activeDemo === index ? null : index)}
-                className="w-full mt-4 px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all"
-              >
-                {activeDemo === index ? 'Hide Details' : 'Watch Demo'} →
-              </button>
-            </motion.div>
+            </motion.article>
           ))}
         </div>
 
@@ -250,6 +223,7 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
           </div>
         </div>
       </div>
+      {/* Demo modal removed as per requirement */}
     </div>
   );
 }

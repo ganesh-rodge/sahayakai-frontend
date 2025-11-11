@@ -28,6 +28,7 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
   const [courseInput, setCourseInput] = useState('');
   const [certifications, setCertifications] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
+  const [otherLanguage, setOtherLanguage] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,7 +37,14 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
   };
 
   const toggleLanguage = (lang: string) => {
-    setLanguages(prev => prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang]);
+    setLanguages(prev => {
+      if (prev.includes(lang)) {
+        // if removing 'Other', also clear the otherLanguage input
+        if (lang === 'Other') setOtherLanguage('');
+        return prev.filter(l => l !== lang);
+      }
+      return [...prev, lang];
+    });
   };
 
   const addSubject = () => {
@@ -74,7 +82,17 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
     if (!finalInstitutionName) newErrors.institutionName = 'Institution name is required';
     if (subjects.length === 0) newErrors.subjects = 'Please add at least one subject';
     if (courses.length === 0) newErrors.courses = 'Please add at least one course';
-    if (languages.length === 0) newErrors.languages = 'Please select at least one language';
+    // Handle 'Other' language: require the user to enter the custom language and replace 'Other' with it
+    let finalLanguages = [...languages];
+    if (finalLanguages.includes('Other')) {
+      if (!otherLanguage.trim()) {
+        newErrors.otherLanguage = 'Please enter the other language';
+      } else {
+        finalLanguages = finalLanguages.map(l => l === 'Other' ? otherLanguage.trim() : l);
+      }
+    }
+
+    if (finalLanguages.length === 0) newErrors.languages = 'Please select at least one language';
 
     if (institutionType === 'school' && grades.length === 0) {
       newErrors.grades = 'Please select at least one grade';
@@ -101,7 +119,7 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
       subjects,
       courses,
       certifications,
-      languages
+      languages: finalLanguages
     });
   };
 
@@ -122,7 +140,7 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
     return () => { mounted = false; };
   }, []);
 
-  const COMMON_LANGUAGES = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Other'];
+  const COMMON_LANGUAGES = ['English', 'Hindi', 'Marathi', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Other'];
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
@@ -424,6 +442,22 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
                     </button>
                   ))}
                 </div>
+
+                {/* Show input when user selects Other to provide a custom language */}
+                {languages.includes('Other') && (
+                  <div className="mt-3">
+                    <input
+                      id="teacherOtherLanguage"
+                      type="text"
+                      value={otherLanguage}
+                      onChange={(e) => setOtherLanguage(e.target.value)}
+                      placeholder="Enter other language"
+                      className="w-full px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors"
+                    />
+                    {errors.otherLanguage && <p className="text-red-500 text-xs mt-2">{errors.otherLanguage}</p>}
+                  </div>
+                )}
+
                 {errors.languages && <p className="text-red-500 text-xs mt-2">{errors.languages}</p>}
               </div>
             </div>

@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 
 interface StudentExploreProps {
   onBack: () => void;
@@ -7,7 +6,6 @@ interface StudentExploreProps {
 }
 
 export default function StudentExplore({ onBack, onGetStarted }: StudentExploreProps) {
-  const [activeFeature, setActiveFeature] = useState<number | null>(null);
 
   const features = [
     {
@@ -112,42 +110,26 @@ export default function StudentExplore({ onBack, onGetStarted }: StudentExploreP
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              className="bg-dark-secondary border border-gray-800 rounded-xl p-6 relative overflow-hidden"
+              className="bg-dark-secondary border border-gray-800 rounded-xl p-6 relative overflow-hidden flex flex-col"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               whileHover={{ scale: 1.03, borderColor: "#00d4aa" }}
             >
               <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feature.color}`}></div>
-
               <div className="text-5xl mb-4">{feature.icon}</div>
               <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
               <p className="text-gray-400 text-sm leading-relaxed mb-4">{feature.description}</p>
-
-              {activeFeature === index && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 pt-4 border-t border-gray-700"
-                >
-                  <ul className="space-y-2">
-                    {feature.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-gray-300 text-sm">
-                        <span className="text-accent mt-1">✓</span>
-                        <span>{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              )}
-
-              <button
-                onClick={() => setActiveFeature(activeFeature === index ? null : index)}
-                className="mt-4 text-accent text-sm font-semibold hover:text-accent-light transition-colors"
-              >
-                {activeFeature === index ? 'Show less' : 'Learn more'} →
-              </button>
+              <div className="mt-auto pt-4 border-t border-gray-700">
+                <ul className="space-y-2">
+                  {feature.details.map((detail, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-gray-300 text-sm">
+                      <span className="text-accent mt-1">✓</span>
+                      <span>{detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </motion.div>
           ))}
         </div>
