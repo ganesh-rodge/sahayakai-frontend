@@ -57,15 +57,16 @@ export default function SignupPage({ onBack, onLogin }: SignupPageProps) {
             aria-pressed={selectedRole === 'teacher'}
             onClick={() => { setSelectedRole('teacher'); setView('teacher'); }}
             onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedRole('teacher'); setView('teacher'); } }}
-            className={`${selectedRole === 'teacher' ? 'ring-2 ring-accent/40' : ''} p-8 rounded-2xl bg-gradient-to-b from-dark-secondary/60 to-dark-secondary border border-gray-800 shadow-lg cursor-pointer`}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.995 }}
+            className={`${selectedRole === 'teacher' ? 'ring-2 ring-accent/40' : ''} p-8 rounded-2xl bg-gradient-to-b from-dark-secondary/60 to-dark-secondary border-2 border-gray-800 hover:border-accent/50 shadow-lg cursor-pointer group relative overflow-hidden`}
+            whileHover={{ scale: 1.02, y: -5 }}
+            whileTap={{ scale: 0.99 }}
             transition={{ type: "spring", stiffness: 240 }}
           >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-accent-light opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="flex items-start gap-4">
-              <div className="text-4xl">🎓</div>
+              <div className="text-5xl group-hover:scale-110 transition-transform">🎓</div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold">I'm here to teach and guide</h3>
+                <h3 className="text-2xl font-bold mb-2 group-hover:text-accent transition-colors">I'm here to teach and guide</h3>
                 <p className="text-gray-400 mt-2">Create interactive courses, assign work, and track student progress with intelligent analytics.</p>
 
                 <ul className="mt-4 grid gap-2">
@@ -74,7 +75,10 @@ export default function SignupPage({ onBack, onLogin }: SignupPageProps) {
                   <li className="text-sm text-gray-300">• Integrations for gradebooks & LMS</li>
                 </ul>
 
-                {/* Card is clickable; primary CTA removed to make entire card the action target */}
+                <div className="mt-6 flex items-center gap-2 text-accent font-semibold">
+                  <span>Continue as Teacher</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </div>
               </div>
             </div>
           </motion.section>
@@ -86,15 +90,16 @@ export default function SignupPage({ onBack, onLogin }: SignupPageProps) {
             aria-pressed={selectedRole === 'student'}
             onClick={() => { setSelectedRole('student'); setView('student'); }}
             onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { setSelectedRole('student'); setView('student'); } }}
-            className={`${selectedRole === 'student' ? 'ring-2 ring-accent/40' : ''} p-8 rounded-2xl bg-gradient-to-b from-dark-tertiary/60 to-dark-tertiary border border-gray-800 shadow-lg cursor-pointer`}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.995 }}
+            className={`${selectedRole === 'student' ? 'ring-2 ring-accent/40' : ''} p-8 rounded-2xl bg-gradient-to-b from-dark-tertiary/60 to-dark-tertiary border-2 border-gray-800 hover:border-accent/50 shadow-lg cursor-pointer group relative overflow-hidden`}
+            whileHover={{ scale: 1.02, y: -5 }}
+            whileTap={{ scale: 0.99 }}
             transition={{ type: "spring", stiffness: 240 }}
           >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-accent-light opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="flex items-start gap-4">
-              <div className="text-4xl">📖</div>
+              <div className="text-5xl group-hover:scale-110 transition-transform">📖</div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold">I'm here to learn and grow</h3>
+                <h3 className="text-2xl font-bold mb-2 group-hover:text-accent transition-colors">I'm here to learn and grow</h3>
                 <p className="text-gray-400 mt-2">Access personalized learning paths, practice exercises, and get feedback to accelerate your learning.</p>
 
                 <ul className="mt-4 grid gap-2">
@@ -103,7 +108,10 @@ export default function SignupPage({ onBack, onLogin }: SignupPageProps) {
                   <li className="text-sm text-gray-300">• Track progress and achievements</li>
                 </ul>
 
-                {/* Card is clickable; primary CTA removed to make entire card the action target */}
+                <div className="mt-6 flex items-center gap-2 text-accent font-semibold">
+                  <span>Continue as Student</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </div>
               </div>
             </div>
           </motion.section>

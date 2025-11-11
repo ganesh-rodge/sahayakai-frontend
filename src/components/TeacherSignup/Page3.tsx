@@ -7,12 +7,19 @@ interface Page3Props {
 }
 
 const QUALIFICATIONS = [
-  'Bachelor Degree',
-  'Master Degree',
+  'Advanced Diploma',
+  'Associate Degree',
+  'Bachelor\'s Degree',
+  'Certificate',
+  'Diploma',
+  'High School / Secondary',
+  'Master\'s Degree',
+  'MPhil (Master of Philosophy)',
+  'Other',
   'PhD',
   'Post-Doctoral',
-  'Diploma',
-  'Certificate'
+  'Professional Degree (e.g., MBBS, LLB, B.Ed)',
+  'Vocational / Technical Qualification'
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();

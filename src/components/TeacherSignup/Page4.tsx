@@ -43,6 +43,7 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
     if (subjectInput.trim() && !subjects.includes(subjectInput.trim())) {
       setSubjects([...subjects, subjectInput.trim()]);
       setSubjectInput('');
+      setErrors(prev => ({ ...prev, subjects: '' }));
     }
   };
 
@@ -54,6 +55,7 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
     if (courseInput.trim() && !courses.includes(courseInput.trim())) {
       setCourses([...courses, courseInput.trim()]);
       setCourseInput('');
+      setErrors(prev => ({ ...prev, courses: '' }));
     }
   };
 

@@ -112,12 +112,11 @@ export default function StudentExplore({ onBack, onGetStarted }: StudentExploreP
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              className="bg-dark-secondary border border-gray-800 rounded-xl p-6 cursor-pointer relative overflow-hidden"
+              className="bg-dark-secondary border border-gray-800 rounded-xl p-6 relative overflow-hidden"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               whileHover={{ scale: 1.03, borderColor: "#00d4aa" }}
-              onClick={() => setActiveFeature(activeFeature === index ? null : index)}
             >
               <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feature.color}`}></div>
 
@@ -143,7 +142,10 @@ export default function StudentExplore({ onBack, onGetStarted }: StudentExploreP
                 </motion.div>
               )}
 
-              <button className="mt-4 text-accent text-sm font-semibold hover:text-accent-light transition-colors">
+              <button
+                onClick={() => setActiveFeature(activeFeature === index ? null : index)}
+                className="mt-4 text-accent text-sm font-semibold hover:text-accent-light transition-colors"
+              >
                 {activeFeature === index ? 'Show less' : 'Learn more'} →
               </button>
             </motion.div>

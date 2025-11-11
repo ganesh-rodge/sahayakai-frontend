@@ -30,9 +30,11 @@ export default function LoginPage({ onBack, onSignup, onChooseRole }: LoginPageP
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div className="mb-8">
-              <span className="inline-block px-4 py-2 bg-accent text-dark-primary text-xs font-bold rounded-full mb-6 uppercase tracking-wide">
-                For Teachers
-              </span>
+              <div className="h-[38px] mb-6">
+                <span className="inline-block px-4 py-2 bg-accent text-dark-primary text-xs font-bold rounded-full uppercase tracking-wide">
+                  For Teachers
+                </span>
+              </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white italic">
                 For <span className="italic">Teachers</span>
               </h2>
@@ -67,6 +69,7 @@ export default function LoginPage({ onBack, onSignup, onChooseRole }: LoginPageP
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div className="mb-8">
+              <div className="h-[38px] mb-6"></div>
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white italic">
                 For <span className="italic">Students</span>
               </h2>
