@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Menu, X, LogOut, Home } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DashboardLayoutProps {
@@ -12,7 +12,7 @@ interface DashboardLayoutProps {
   profilePicture?: string;
 }
 
-export default function DashboardLayout({ children, currentPage, onLogout, userName = 'Teacher', userEmail = '', profilePicture = '' }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, onLogout, userName = 'Teacher', userEmail = '', profilePicture = '' }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [

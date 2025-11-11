@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 export default function About() {
   const themeColor = '#00d4aa';
@@ -11,7 +10,7 @@ export default function About() {
     'group relative overflow-hidden rounded-2xl w-36 h-36 md:w-40 md:h-40 border border-white/6 ring-1 ring-white/3 backdrop-blur-xl bg-[rgba(255,255,255,0.02)] shadow-[0_10px_30px_rgba(0,0,0,0.6)] transform-gpu will-change-transform flex flex-col items-center justify-center';
 
   // Circular orbit animation - cards move in a perfect circle with larger radius
-  const getCircularOrbit = (index, total = 3, radius = 130) => {
+  const getCircularOrbit = (index: number, total = 3, radius = 130): any => {
     // Calculate angle for each card to position them in a circle
     const angleOffset = (Math.PI * 2) / total;
     const startAngle = index * angleOffset - Math.PI / 2; // Start from top
@@ -142,7 +141,7 @@ export default function About() {
             <div className="relative w-full h-full flex items-center justify-center">
               {/* Mobile stacked fallback */}
               <div className="flex flex-col gap-4 sm:hidden">
-                {features.map((feature, index) => (
+                {features.map((feature, index: number) => (
                   <div key={index} className={featureCardBase} style={{ boxShadow: `0 8px 25px rgba(0,255,180,0.06)` }}>
                     <div className="relative mb-3">
                       <div className="relative w-12 h-12 grid place-items-center rounded-xl" style={{ background: `${themeColor}22`, boxShadow: `0 6px 18px ${themeColor}22, inset 0 4px 12px rgba(0,0,0,0.45)` }}>
@@ -156,7 +155,7 @@ export default function About() {
 
               {/* Desktop circular orbit */}
               <div className="hidden sm:block relative w-full h-full">
-                {features.map((feature, index) => (
+                {features.map((feature, index: number) => (
                   <motion.div
                     key={index}
                     className="absolute top-1/2 left-1/2"
@@ -164,7 +163,7 @@ export default function About() {
                       x: '-50%',
                       y: '-50%',
                     }}
-                    animate={getCircularOrbit(index, features.length, 130)}
+                    animate={getCircularOrbit(index, features.length, 130) as any}
                   >
                     <motion.div
                       className={featureCardBase}

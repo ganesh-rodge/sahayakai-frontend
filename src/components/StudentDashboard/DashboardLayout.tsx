@@ -13,7 +13,7 @@ interface DashboardLayoutProps {
   profilePicture: string;
 }
 
-export default function DashboardLayout({ children, currentPage, onLogout, userName, userEmail, profilePicture }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, onLogout, userName, userEmail, profilePicture }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [
