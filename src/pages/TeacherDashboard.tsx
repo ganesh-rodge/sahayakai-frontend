@@ -150,6 +150,14 @@ export default function TeacherDashboard() {
                 </button>
               </div>
 
+              <button
+                onClick={() => setActiveView('saved-work')}
+                className="px-3 py-2 rounded-md bg-dark-tertiary text-sm text-gray-300 hover:bg-dark-tertiary/80 transition-colors"
+                title="Open Saved Work"
+              >
+                💾 Saved Work
+              </button>
+
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent-light flex items-center justify-center text-dark-primary font-bold">
                 {teacherName.charAt(0)}
               </div>
