@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 interface VisualAidGeneratorProps {
   onBack: () => void;
+  onSave?: (payload?: any) => void;
 }
 
 const VISUAL_AID_TYPES = [
@@ -11,7 +12,8 @@ const VISUAL_AID_TYPES = [
   { id: 'timeline', label: 'Timeline', icon: '📅', description: 'Historical timelines, process timelines' }
 ];
 
-export default function VisualAidGenerator({ onBack }: VisualAidGeneratorProps) {
+export default function VisualAidGenerator({ onBack, onSave }: VisualAidGeneratorProps) {
+  const [savedMsg, setSavedMsg] = useState('');
   const [visualType, setVisualType] = useState('');
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -294,6 +296,21 @@ Customization Tips:
           </button>
           <h2 className="text-3xl font-bold">Visual Aid Generator</h2>
           <p className="text-gray-400 mt-2">Create educational diagrams and visual aids for teaching</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
+          <button
+            onClick={() => {
+              const payload = generatedVisual ? { title: `${visualType || 'Visual Aid'}`, content: generatedVisual } : { title: `${visualType || 'Visual Aid'}`, content: { visualType, description } };
+              onSave?.(payload);
+              setSavedMsg('Saved');
+              setTimeout(() => setSavedMsg(''), 1800);
+            }}
+            className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm"
+          >
+            Save Work
+          </button>
         </div>
       </div>
 

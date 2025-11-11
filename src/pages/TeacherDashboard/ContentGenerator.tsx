@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 interface ContentGeneratorProps {
   onBack: () => void;
+  onSave?: (payload?: any) => void;
 }
 
 const LANGUAGES = [
@@ -18,7 +19,8 @@ const CONTENT_TYPES = [
 
 const GRADES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
-export default function ContentGenerator({ onBack }: ContentGeneratorProps) {
+export default function ContentGenerator({ onBack, onSave }: ContentGeneratorProps) {
+  const [savedMsg, setSavedMsg] = useState('');
   const [language, setLanguage] = useState('');
   const [contentType, setContentType] = useState('');
   const [gradeLevel, setGradeLevel] = useState('');
@@ -129,6 +131,21 @@ Generated with Sahayak-AI Content Generator`;
           </button>
           <h2 className="text-3xl font-bold">Content Generator</h2>
           <p className="text-gray-400 mt-2">Create engaging educational content for your students</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
+          <button
+            onClick={() => {
+              const payload = generatedContent ? { title: `${contentType || 'Content'} - ${topic || ''}`, content: generatedContent } : { title: `${contentType || 'Content'} - ${topic || ''}`, content: { language, contentType, gradeLevel, topic } };
+              onSave?.(payload);
+              setSavedMsg('Saved');
+              setTimeout(() => setSavedMsg(''), 1800);
+            }}
+            className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm"
+          >
+            Save Work
+          </button>
         </div>
       </div>
 

@@ -2,11 +2,13 @@ import { useState } from 'react';
 
 interface MaterialBaseProps {
   onBack: () => void;
+  onSave?: (payload?: any) => void;
 }
 
 const GRADES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
-export default function MaterialBase({ onBack }: MaterialBaseProps) {
+export default function MaterialBase({ onBack, onSave }: MaterialBaseProps) {
+  const [savedMsg, setSavedMsg] = useState('');
   const [gradeLevel, setGradeLevel] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -152,6 +154,21 @@ Generated with Sahayak-AI Material Base`;
           </button>
           <h2 className="text-3xl font-bold">Material Base</h2>
           <p className="text-gray-400 mt-2">Transform textbook pages into interactive worksheets</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
+          <button
+            onClick={() => {
+              const payload = generatedWorksheet ? { title: `Worksheet - Grade ${gradeLevel || 'N/A'}`, content: generatedWorksheet } : { title: `Worksheet - Grade ${gradeLevel || 'N/A'}`, content: { gradeLevel } };
+              onSave?.(payload);
+              setSavedMsg('Saved');
+              setTimeout(() => setSavedMsg(''), 1800);
+            }}
+            className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm"
+          >
+            Save Work
+          </button>
         </div>
       </div>
 

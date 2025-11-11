@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 interface KnowledgeBaseProps {
   onBack: () => void;
+  onSave?: (payload?: any) => void;
 }
 
 const LANGUAGES = [
@@ -19,7 +20,8 @@ const SAMPLE_QUESTIONS = [
   'Explain Newton\'s laws of motion'
 ];
 
-export default function KnowledgeBase({ onBack }: KnowledgeBaseProps) {
+export default function KnowledgeBase({ onBack, onSave }: KnowledgeBaseProps) {
+  const [savedMsg, setSavedMsg] = useState('');
   const [language, setLanguage] = useState('English');
   const [question, setQuestion] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -146,6 +148,21 @@ For deeper understanding, students can explore:
           </button>
           <h2 className="text-3xl font-bold">Knowledge Base</h2>
           <p className="text-gray-400 mt-2">Get instant AI-powered explanations for any topic</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
+          <button
+            onClick={() => {
+              const payload = generatedAnswer ? { title: `Answer - ${question || 'Query'}`, content: generatedAnswer } : { title: `Answer - ${question || 'Query'}`, content: { language, question } };
+              onSave?.(payload);
+              setSavedMsg('Saved');
+              setTimeout(() => setSavedMsg(''), 1800);
+            }}
+            className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm"
+          >
+            Save Work
+          </button>
         </div>
       </div>
 

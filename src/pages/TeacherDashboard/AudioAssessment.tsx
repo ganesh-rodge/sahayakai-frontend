@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 
 interface AudioAssessmentProps {
   onBack: () => void;
+  onSave?: (payload?: any) => void;
 }
 
 const LANGUAGES = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Arabic', 'Portuguese', 'Italian'];
@@ -25,7 +26,7 @@ const SAMPLE_TEXTS: Record<string, string[]> = {
   ]
 };
 
-export default function AudioAssessment({ onBack }: AudioAssessmentProps) {
+export default function AudioAssessment({ onBack, onSave }: AudioAssessmentProps) {
   const [language, setLanguage] = useState('English');
   const [gradeLevel, setGradeLevel] = useState('');
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'advanced'>('easy');
@@ -312,14 +313,28 @@ This assessment was conducted using AI-powered speech analysis technology. Resul
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const [savedMsg, setSavedMsg] = useState('');
+
   return (
     <div className="animate-fadeIn">
-      <div className="mb-8">
-        <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
-          ← Back to Dashboard
-        </button>
-        <h2 className="text-3xl font-bold">Audio Reading Assessment</h2>
-        <p className="text-gray-400 mt-2">Evaluate student reading skills using speech analysis</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
+            ← Back to Dashboard
+          </button>
+          <h2 className="text-3xl font-bold">Audio Reading Assessment</h2>
+          <p className="text-gray-400 mt-2">Evaluate student reading skills using speech analysis</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
+          <button onClick={() => {
+            const payload = assessment ? { title: `Audio Assessment - ${gradeLevel || ''}`, content: assessment } : { title: `Audio Assessment - ${gradeLevel || ''}`, content: { language, gradeLevel, difficulty, recordingTime } };
+            onSave?.(payload);
+            setSavedMsg('Saved');
+            setTimeout(() => setSavedMsg(''), 1800);
+          }} className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm">Save Work</button>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">

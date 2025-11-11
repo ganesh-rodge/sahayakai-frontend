@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 interface GameGeneratorProps {
   onBack: () => void;
+  onSave?: (payload?: any) => void;
 }
 
 const GAME_TYPES = [
@@ -13,7 +14,8 @@ const GAME_TYPES = [
 
 const GRADE_LEVELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
-export default function GameGenerator({ onBack }: GameGeneratorProps) {
+export default function GameGenerator({ onBack, onSave }: GameGeneratorProps) {
+  const [savedMsg, setSavedMsg] = useState('');
   const [gameType, setGameType] = useState('');
   const [gradeLevel, setGradeLevel] = useState('');
   const [topicTheme, setTopicTheme] = useState('');
@@ -450,12 +452,24 @@ Use this game to assess student understanding of ${topicTheme}. Observe which co
 
   return (
     <div className="animate-fadeIn">
-      <div className="mb-8">
-        <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
-          ← Back to Dashboard
-        </button>
-        <h2 className="text-3xl font-bold">Game Generator</h2>
-        <p className="text-gray-400 mt-2">Create engaging educational games for your classroom</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
+            ← Back to Dashboard
+          </button>
+          <h2 className="text-3xl font-bold">Game Generator</h2>
+          <p className="text-gray-400 mt-2">Create engaging educational games for your classroom</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
+          <button onClick={() => {
+            const payload = generatedGame ? { title: `${GAME_TYPES.find(g=>g.id===gameType)?.label || 'Game'} - ${topicTheme || ''}`, content: generatedGame } : { title: `${GAME_TYPES.find(g=>g.id===gameType)?.label || 'Game'} - ${topicTheme || ''}`, content: { gameType, gradeLevel, topicTheme } };
+            onSave?.(payload);
+            setSavedMsg('Saved');
+            setTimeout(() => setSavedMsg(''), 1800);
+          }} className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm">Save Work</button>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">

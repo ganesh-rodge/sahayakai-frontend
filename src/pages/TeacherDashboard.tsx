@@ -6,9 +6,10 @@ import VisualAidGenerator from './TeacherDashboard/VisualAidGenerator';
 import LessonPlanner from './TeacherDashboard/LessonPlanner';
 import GameGenerator from './TeacherDashboard/GameGenerator';
 import AudioAssessment from './TeacherDashboard/AudioAssessment';
+import SavedWorkList from './TeacherDashboard/SavedWork.tsx';
 
 export default function TeacherDashboard() {
-  const [activeView, setActiveView] = useState<'welcome' | 'content-generator' | 'material-base' | 'knowledge-base' | 'visual-aid' | 'lesson-planner' | 'game-generator' | 'audio-assessment'>('welcome');
+  const [activeView, setActiveView] = useState<'welcome' | 'content-generator' | 'material-base' | 'knowledge-base' | 'visual-aid' | 'lesson-planner' | 'game-generator' | 'audio-assessment' | 'saved-work'>('welcome');
   const [institutionType, setInstitutionType] = useState<'school' | 'college'>('school');
 
   const teacherName = 'Dr. Smith';
@@ -90,6 +91,26 @@ export default function TeacherDashboard() {
     institutionType === 'school' ? tool.forSchool : tool.forCollege
   );
 
+  const saveWorkToStorage = (entry: { toolId: string; title: string; content?: string | any; savedAt?: string }) => {
+    try {
+      const raw = localStorage.getItem('teacherSavedWorks');
+      const arr = raw ? JSON.parse(raw) : [];
+      const item = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        toolId: entry.toolId,
+        title: entry.title || 'Untitled',
+        content: entry.content || null,
+        savedAt: entry.savedAt || new Date().toISOString()
+      };
+      arr.unshift(item);
+      localStorage.setItem('teacherSavedWorks', JSON.stringify(arr));
+      // navigate to saved work list after saving
+      setActiveView('saved-work');
+    } catch (err) {
+      console.error('Failed saving work', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-dark-primary">
       <div className="sticky top-0 z-50 bg-dark-secondary/95 backdrop-blur-xl border-b border-gray-800">
@@ -165,31 +186,46 @@ export default function TeacherDashboard() {
         )}
 
         {activeView === 'content-generator' && (
-          <ContentGenerator onBack={() => setActiveView('welcome')} />
+          <ContentGenerator onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'content-generator', title: payload?.title || 'Content', content: payload?.content || payload })} />
         )}
 
         {activeView === 'material-base' && (
-          <MaterialBase onBack={() => setActiveView('welcome')} />
+          <MaterialBase onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'material-base', title: payload?.title || 'Worksheet', content: payload?.content || payload })} />
         )}
 
         {activeView === 'knowledge-base' && (
-          <KnowledgeBase onBack={() => setActiveView('welcome')} />
+          <KnowledgeBase onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'knowledge-base', title: payload?.title || 'Answer', content: payload?.content || payload })} />
         )}
 
         {activeView === 'visual-aid' && (
-          <VisualAidGenerator onBack={() => setActiveView('welcome')} />
+          <VisualAidGenerator onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'visual-aid', title: payload?.title || 'Visual Aid', content: payload?.content || payload })} />
         )}
 
         {activeView === 'lesson-planner' && (
-          <LessonPlanner onBack={() => setActiveView('welcome')} />
+          <LessonPlanner onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'lesson-planner', title: payload?.title || 'Lesson Plan', content: payload?.content || payload })} />
         )}
 
         {activeView === 'game-generator' && (
-          <GameGenerator onBack={() => setActiveView('welcome')} />
+          <GameGenerator onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'game-generator', title: payload?.title || 'Game', content: payload?.content || payload })} />
         )}
 
         {activeView === 'audio-assessment' && (
-          <AudioAssessment onBack={() => setActiveView('welcome')} />
+          <AudioAssessment onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'audio-assessment', title: payload?.title || 'Audio Assessment', content: payload?.content || payload })} />
+        )}
+
+        {activeView === 'saved-work' && (
+          // lazy import-like render of saved work list component
+          <div className="animate-fadeIn">
+            {/* We'll render saved work list component file */}
+            {/* Keep inline simple viewer so we don't add routing yet */}
+            <div className="mb-8">
+              <button onClick={() => setActiveView('welcome')} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">← Back to Dashboard</button>
+              <h2 className="text-3xl font-bold">Saved Work</h2>
+              <p className="text-gray-400 mt-2">Your saved teaching artifacts</p>
+            </div>
+
+            <SavedWorkList />
+          </div>
         )}
       </div>
     </div>

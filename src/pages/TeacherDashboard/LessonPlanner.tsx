@@ -2,13 +2,15 @@ import { useState } from 'react';
 
 interface LessonPlannerProps {
   onBack: () => void;
+  onSave?: (payload?: any) => void;
 }
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science', 'Physics', 'Chemistry', 'Biology', 'Social Studies', 'Art', 'Music', 'Physical Education'];
 const DURATIONS = ['30 minutes', '45 minutes', '1 hour', '1.5 hours', '2 hours'];
 const GRADE_LEVELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
-export default function LessonPlanner({ onBack }: LessonPlannerProps) {
+export default function LessonPlanner({ onBack, onSave }: LessonPlannerProps) {
+  const [savedMsg, setSavedMsg] = useState('');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
   const [duration, setDuration] = useState('');
@@ -227,12 +229,24 @@ This lesson aligns with grade-level educational standards for ${subject}.
 
   return (
     <div className="animate-fadeIn">
-      <div className="mb-8">
-        <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
-          ← Back to Dashboard
-        </button>
-        <h2 className="text-3xl font-bold">Lesson Planner</h2>
-        <p className="text-gray-400 mt-2">Generate comprehensive lesson plans instantly</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
+            ← Back to Dashboard
+          </button>
+          <h2 className="text-3xl font-bold">Lesson Planner</h2>
+          <p className="text-gray-400 mt-2">Generate comprehensive lesson plans instantly</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
+          <button onClick={() => {
+            const payload = generatedPlan ? { title: `${subject || 'Lesson'} - ${topic || ''}`, content: generatedPlan } : { title: `${subject || 'Lesson'} - ${topic || ''}`, content: { subject, topic, duration, gradeLevel } };
+            onSave?.(payload);
+            setSavedMsg('Saved');
+            setTimeout(() => setSavedMsg(''), 1800);
+          }} className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm">Save Work</button>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
