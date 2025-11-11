@@ -7,11 +7,7 @@ import LessonPlanner from './TeacherDashboard/LessonPlanner';
 import GameGenerator from './TeacherDashboard/GameGenerator';
 import AudioAssessment from './TeacherDashboard/AudioAssessment';
 
-interface TeacherDashboardProps {
-  onBack: () => void;
-}
-
-export default function TeacherDashboard({ onBack }: TeacherDashboardProps) {
+export default function TeacherDashboard() {
   const [activeView, setActiveView] = useState<'welcome' | 'content-generator' | 'material-base' | 'knowledge-base' | 'visual-aid' | 'lesson-planner' | 'game-generator' | 'audio-assessment'>('welcome');
   const [institutionType, setInstitutionType] = useState<'school' | 'college'>('school');
 
@@ -101,15 +97,12 @@ export default function TeacherDashboard({ onBack }: TeacherDashboardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={onBack}
-                className="text-gray-400 hover:text-white transition-colors"
+                onClick={() => (window.location.href = '/')}
+                className="flex items-center gap-2"
+                title="Back to Home"
               >
-                ← Back
-              </button>
-              <div className="flex items-center gap-2">
                 <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-8 w-auto" />
-                <span className="font-bold text-lg">Teacher Dashboard</span>
-              </div>
+              </button>
             </div>
 
             <div className="flex items-center gap-4">

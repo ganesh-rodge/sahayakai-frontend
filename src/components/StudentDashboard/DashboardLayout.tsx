@@ -1,18 +1,19 @@
 import { useState } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
 import { Home, BookOpen, Map, User, Menu, X, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
-  currentPage: 'dashboard' | 'lessons' | 'roadmap' | 'profile';
-  onNavigate: (page: 'dashboard' | 'lessons' | 'roadmap' | 'profile') => void;
+  children?: React.ReactNode;
+  currentPage?: 'dashboard' | 'lessons' | 'roadmap' | 'profile';
+  onNavigate?: (page: 'dashboard' | 'lessons' | 'roadmap' | 'profile') => void;
   onLogout: () => void;
   userName: string;
   userEmail: string;
   profilePicture: string;
 }
 
-export default function DashboardLayout({ children, currentPage, onNavigate, onLogout, userName, userEmail, profilePicture }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, currentPage, onLogout, userName, userEmail, profilePicture }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [
@@ -22,10 +23,7 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
-  const handleNavigate = (page: 'dashboard' | 'lessons' | 'roadmap' | 'profile') => {
-    onNavigate(page);
-    setIsSidebarOpen(false);
-  };
+  // navigation is handled by react-router via NavLink; keep onNavigate for backward compatibility
 
   return (
     <div className="min-h-screen bg-dark-primary">
@@ -34,7 +32,7 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
         className="bg-dark-secondary/90 backdrop-blur-xl border-b border-gray-800 fixed top-0 left-0 right-0 z-50"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.5 }}
       >
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -59,22 +57,18 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
             <div className="hidden md:flex items-center gap-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = currentPage === item.id;
                 return (
-                  <motion.button
+                  <NavLink
                     key={item.id}
-                    onClick={() => handleNavigate(item.id as any)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-accent/20 to-accent-light/20 text-accent border border-accent/30'
-                        : 'text-gray-400 hover:bg-dark-tertiary hover:text-white'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    to={`/student/${item.id === 'dashboard' ? 'dashboard' : item.id}`}
+                    className={({ isActive }: { isActive: boolean }) => `flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isActive ? 'bg-gradient-to-r from-accent/20 to-accent-light/20 text-accent border border-accent/30' : 'text-gray-400 hover:bg-dark-tertiary hover:text-white'}`}
+                    onClick={() => setIsSidebarOpen(false)}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </motion.button>
+                    <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </motion.span>
+                  </NavLink>
                 );
               })}
             </div>
@@ -134,24 +128,19 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
               <nav className="flex-1 px-4 py-6 space-y-2">
                 {menuItems.map((item, index) => {
                   const Icon = item.icon;
-                  const isActive = currentPage === item.id;
                   return (
-                    <motion.button
+                    <NavLink
                       key={item.id}
-                      onClick={() => handleNavigate(item.id as any)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                        isActive
-                          ? 'bg-gradient-to-r from-accent/20 to-accent-light/20 text-accent border border-accent/30'
-                          : 'text-gray-400 hover:bg-dark-tertiary hover:text-white'
-                      }`}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      to={`/student/${item.id === 'dashboard' ? 'dashboard' : item.id}`}
+                      className={({ isActive }: { isActive: boolean }) => `w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-gradient-to-r from-accent/20 to-accent-light/20 text-accent border border-accent/30' : 'text-gray-400 hover:bg-dark-tertiary hover:text-white'}`}
+                      onClick={() => setIsSidebarOpen(false)}
+                      style={{ display: 'flex' }}
                     >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium">{item.label}</span>
-                    </motion.button>
+                      <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.05 }} whileTap={{ scale: 0.95 }} className="w-full flex items-center gap-3">
+                        <Icon className="w-5 h-5" />
+                        <span className="font-medium">{item.label}</span>
+                      </motion.span>
+                    </NavLink>
                   );
                 })}
               </nav>
@@ -188,9 +177,10 @@ export default function DashboardLayout({ children, currentPage, onNavigate, onL
       {/* Main Content */}
       <main className="pt-16 min-h-screen">
         <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-          {children}
+          {children ?? <Outlet />}
         </div>
       </main>
     </div>
   );
 }
+

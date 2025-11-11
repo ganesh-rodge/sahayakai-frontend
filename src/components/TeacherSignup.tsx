@@ -84,6 +84,23 @@ export default function TeacherSignup({ onBack, onLogin }: TeacherSignupProps) {
 
   const handlePage4Complete = async (data: TeacherPage4Data) => {
     console.log('Complete teacher registration:', { page1Data, page2Data, page3Data, page4Data: data });
+    try {
+      // persist teacher profile locally so dashboard can read defaults
+      if (page1Data?.username) {
+        localStorage.setItem('teacherName', page1Data.username);
+      }
+      if (data?.institutionType) {
+        localStorage.setItem('teacherInstitutionType', data.institutionType);
+      }
+      if (data?.institutionName) {
+        localStorage.setItem('teacherInstitutionName', data.institutionName);
+      }
+    } catch (err) {
+      // ignore localStorage errors
+    }
+
+    // after registration completes, optionally navigate to login
+    onLogin();
   };
 
   return (

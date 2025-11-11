@@ -198,7 +198,7 @@ function App() {
   }
 
   if (currentPage === 'teacher-dashboard') {
-    return <TeacherDashboard onBack={() => navigateToPage('home')} />;
+    return <TeacherDashboard />;
   }
 
   if (currentPage === 'student-dashboard') {

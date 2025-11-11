@@ -109,7 +109,9 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
 
 
   return (
-    <div className="min-h-screen bg-dark-primary">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0c0f12] to-[#09090f]">
+      {/* subtle radial glow background */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-[1100px] rounded-full blur-3xl opacity-30 bg-[radial-gradient(ellipse_at_center,rgba(0,212,170,0.25),transparent_60%)]" />
       <button
         onClick={onBack}
         className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors z-50 hover:scale-110"
@@ -117,7 +119,7 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
         ← Back
       </button>
 
-      <div className="max-w-7xl mx-auto px-6 py-20">
+      <div className="relative max-w-7xl mx-auto px-6 py-20">
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -132,33 +134,44 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {features.map((feature, index) => (
             <motion.article
               key={feature.title}
-              className="bg-dark-secondary border border-gray-800 rounded-xl p-6 relative overflow-hidden flex flex-col h-full"
+              className="group relative overflow-hidden rounded-2xl p-6 flex flex-col h-full
+                         bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0.015)_100%)]
+                         border border-white/5 ring-1 ring-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.45)]
+                         transition-all duration-300 will-change-transform hover:-translate-y-1.5
+                         hover:shadow-[0_20px_60px_rgba(0,212,170,0.18)] hover:ring-accent/40"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.08 }}
-              whileHover={{ scale: 1.02, borderColor: "#00d4aa" }}
+              whileHover={{ scale: 1.01 }}
             >
-              <header>
+              {/* hover glow */}
+              <div className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(1200px_200px_at_100%_0%,rgba(0,212,170,0.15),transparent)]" />
+
+              <header className="relative">
                 <div className="absolute top-4 right-4">
-                  <span className="text-xs text-gray-500 bg-dark-tertiary px-2 py-1 rounded">
+                  <span className="text-xs text-gray-400/90 bg-white/5 border border-white/10 px-2 py-1 rounded-full backdrop-blur-sm">
                     {feature.stats.created} {feature.stats.unit}
                   </span>
                 </div>
-                <div className="text-5xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-4">{feature.description}</p>
+                <div className="mx-auto mb-5 h-16 w-16 grid place-items-center rounded-2xl
+                                bg-accent/12 text-accent text-3xl
+                                ring-1 ring-accent/30 shadow-[0_0_22px_rgba(0,212,170,0.22)]">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold tracking-tight text-white text-center mb-2">{feature.title}</h3>
+                <p className="text-gray-400/90 text-sm leading-relaxed text-center">{feature.description}</p>
               </header>
 
               {/* Details always visible */}
-              <div className="mt-auto pt-4 border-t border-gray-700">
-                <h4 className="text-sm font-bold mb-3 text-accent">Key Capabilities:</h4>
+              <div className="mt-auto pt-5">
+                <h4 className="text-[13px] font-semibold mb-3 text-accent uppercase tracking-wide">Key Capabilities</h4>
                 <ul className="space-y-2">
                   {feature.capabilities.map((capability, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-gray-300 text-sm">
+                    <li key={idx} className="flex items-start gap-2 text-gray-300/95 text-sm">
                       <span className="text-accent mt-1">✓</span>
                       <span>{capability}</span>
                     </li>
@@ -170,7 +183,10 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
         </div>
 
         <motion.div
-          className="bg-gradient-to-r from-accent/10 to-accent-light/10 border border-accent/30 rounded-xl p-8 md:p-12 text-center mb-16"
+          className="relative overflow-hidden rounded-2xl p-10 md:p-14 text-center mb-20
+                     bg-[linear-gradient(180deg,rgba(0,212,170,0.12)_0%,rgba(0,212,170,0.05)_100%)]
+                     border border-accent/30 ring-1 ring-accent/20
+                     shadow-[0_12px_50px_rgba(0,212,170,0.15)]"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
@@ -183,15 +199,16 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button
               onClick={onGetStarted}
-              className="px-8 py-4 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-bold text-lg"
-              whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(0, 212, 170, 0.4)" }}
+              className="px-8 py-4 rounded-lg font-bold text-lg text-dark-primary
+                         bg-gradient-to-r from-accent to-accent-light shadow-[0_10px_30px_rgba(0,212,170,0.25)]"
+              whileHover={{ scale: 1.05, boxShadow: "0 18px 40px rgba(0, 212, 170, 0.45)" }}
               whileTap={{ scale: 0.95 }}
             >
               Get Started Free
             </motion.button>
             <motion.button
               onClick={onBack}
-              className="px-8 py-4 border-2 border-accent text-accent rounded-lg font-bold text-lg"
+              className="px-8 py-4 rounded-lg font-bold text-lg border-2 border-accent text-accent bg-transparent"
               whileHover={{ scale: 1.05, backgroundColor: "#00d4aa", color: "#0a0a0f" }}
               whileTap={{ scale: 0.95 }}
             >
@@ -201,22 +218,22 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
         </motion.div>
 
         <div className="grid md:grid-cols-4 gap-6">
-          <div className="bg-dark-secondary border border-gray-800 rounded-lg p-6 text-center">
+          <div className="rounded-xl p-6 text-center border border-white/5 ring-1 ring-white/5 bg-white/5/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))]">
             <div className="text-3xl mb-2">⏱️</div>
             <div className="text-2xl font-bold text-accent mb-1">10+ hrs</div>
             <div className="text-gray-400 text-sm">Saved per week</div>
           </div>
-          <div className="bg-dark-secondary border border-gray-800 rounded-lg p-6 text-center">
+          <div className="rounded-xl p-6 text-center border border-white/5 ring-1 ring-white/5 bg-white/5/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))]">
             <div className="text-3xl mb-2">📈</div>
             <div className="text-2xl font-bold text-accent mb-1">2K+</div>
             <div className="text-gray-400 text-sm">Active Teachers</div>
           </div>
-          <div className="bg-dark-secondary border border-gray-800 rounded-lg p-6 text-center">
+          <div className="rounded-xl p-6 text-center border border-white/5 ring-1 ring-white/5 bg-white/5/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))]">
             <div className="text-3xl mb-2">⭐</div>
             <div className="text-2xl font-bold text-accent mb-1">4.8/5</div>
             <div className="text-gray-400 text-sm">Teacher Rating</div>
           </div>
-          <div className="bg-dark-secondary border border-gray-800 rounded-lg p-6 text-center">
+          <div className="rounded-xl p-6 text-center border border-white/5 ring-1 ring-white/5 bg-white/5/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))]">
             <div className="text-3xl mb-2">🎯</div>
             <div className="text-2xl font-bold text-accent mb-1">95%</div>
             <div className="text-gray-400 text-sm">Would Recommend</div>
