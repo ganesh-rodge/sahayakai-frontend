@@ -17,6 +17,23 @@
   .border-accent { @apply border-[#00d4aa]; }
   .from-accent { @apply from-[#00d4aa]; }
   .to-accent-light { @apply to-[#00f5d4]; }
+  /* Responsive container helper */
+  .container-responsive { @apply w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8; }
+}
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  img, video, canvas, svg { display: block; max-width: 100%; height: auto; }
+  img { image-rendering: auto; }
+  /* Mobile-friendly tap targets */
+  button { @apply select-none; }
+  input, button, textarea, select { font: inherit; }
+
+  /* Fluid typography helpers (opt-in classes) */
+  .heading-hero { font-size: clamp(1.875rem, 2.5vw + 1rem, 3.5rem); line-height: 1.1; }
+  .heading-section { font-size: clamp(1.5rem, 1.5vw + 1rem, 2.5rem); line-height: 1.2; }
+  .text-body { font-size: clamp(0.95rem, 0.35vw + 0.85rem, 1.125rem); }
 }
 
 :root {

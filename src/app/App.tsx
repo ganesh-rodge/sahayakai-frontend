@@ -9,6 +9,7 @@ import Footer from '../components/Footer';
 import LoginPage from '../components/LoginPage';
 import LoginTeacherPage from '../pages/LoginTeacherPage';
 import LoginStudentPage from '../pages/LoginStudentPage';
+import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import SignupPage from '../components/SignupPage';
 import StudentExplore from '../pages/StudentExplore';
 import TeacherExplore from '../pages/TeacherExplore';
@@ -22,7 +23,7 @@ import Security from '../pages/legal/Security';
 import TeacherDashboard from '../pages/TeacherDashboard';
 import StudentDashboard from '../components/StudentDashboard';
 
-export type PageType = 'home' | 'login' | 'login-teacher' | 'login-student' | 'signup' | 'signup-teacher' | 'signup-student' | 'student-explore' | 'teacher-explore' | 'help' | 'contact' | 'faq' | 'community' | 'privacy' | 'terms' | 'security' | 'teacher-dashboard' | 'student-dashboard';
+export type PageType = 'home' | 'login' | 'login-teacher' | 'login-student' | 'signup' | 'signup-teacher' | 'signup-student' | 'student-explore' | 'teacher-explore' | 'help' | 'contact' | 'faq' | 'community' | 'privacy' | 'terms' | 'security' | 'teacher-dashboard' | 'student-dashboard' | 'forgot-teacher' | 'forgot-student';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -30,7 +31,7 @@ function App() {
   useEffect(() => {
     const pageFromHash = (): PageType => {
       const hash = window.location.hash.replace('#', '');
-      const pages: PageType[] = ['home','login','login-teacher','login-student','signup','signup-teacher','signup-student','student-explore','teacher-explore','help','contact','faq','community','privacy','terms','security','teacher-dashboard','student-dashboard'];
+      const pages: PageType[] = ['home','login','login-teacher','login-student','signup','signup-teacher','signup-student','student-explore','teacher-explore','help','contact','faq','community','privacy','terms','security','teacher-dashboard','student-dashboard','forgot-teacher','forgot-student'];
       return pages.includes(hash as PageType) ? (hash as PageType) : 'home';
     };
 
@@ -38,11 +39,19 @@ function App() {
       setCurrentPage(pageFromHash());
     };
 
+    const handleHashChange = () => {
+      setCurrentPage(pageFromHash());
+    };
+
     // initialize from URL hash if present
     setCurrentPage(pageFromHash());
     window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handleHashChange);
 
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handleHashChange);
+    };
   }, []);
 
   const navigateToPage = (page: PageType) => {
@@ -100,11 +109,19 @@ function App() {
   }
 
   if (currentPage === 'login-teacher') {
-    return <LoginTeacherPage onBack={() => navigateToPage('login')} onLogin={(username: string, password: string) => handleLogin('teacher', username, password)} onSignup={() => navigateToPage('signup-teacher')} loading={loginLoading} error={loginError} />;
+    return <LoginTeacherPage onBack={() => navigateToPage('login')} onLogin={(username: string, password: string) => handleLogin('teacher', username, password)} onSignup={() => navigateToPage('signup-teacher')} loading={loginLoading} error={loginError} onForgot={() => navigateToPage('forgot-teacher')} />;
   }
 
   if (currentPage === 'login-student') {
-    return <LoginStudentPage onBack={() => navigateToPage('login')} onLogin={(username: string, password: string) => handleLogin('student', username, password)} onSignup={() => navigateToPage('signup-student')} loading={loginLoading} error={loginError} />;
+    return <LoginStudentPage onBack={() => navigateToPage('login')} onLogin={(username: string, password: string) => handleLogin('student', username, password)} onSignup={() => navigateToPage('signup-student')} loading={loginLoading} error={loginError} onForgot={() => navigateToPage('forgot-student')} />;
+  }
+
+  if (currentPage === 'forgot-teacher') {
+    return <ForgotPasswordPage role="teacher" onBack={() => navigateToPage('login-teacher')} />;
+  }
+
+  if (currentPage === 'forgot-student') {
+    return <ForgotPasswordPage role="student" onBack={() => navigateToPage('login-student')} />;
   }
 
   if (currentPage === 'signup') {

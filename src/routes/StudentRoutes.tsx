@@ -54,33 +54,139 @@ export default function StudentRoutes() {
     if (userData.learningGoal) localStorage.setItem('studentUser', JSON.stringify(userData));
   }, [userData]);
 
-  const generateRoadmap = (learningGoal: string, experience: string[], timeCommitment: string): Week[] => {
-    const hasNoExperience = experience.includes('None');
-    const weeksCount = timeCommitment === '20+' ? 8 : timeCommitment === '10-20' ? 12 : 16;
-    const goalKeywords = learningGoal.toLowerCase();
-    const isWebDev = goalKeywords.includes('web') || goalKeywords.includes('frontend') || goalKeywords.includes('full stack');
-    const title = hasNoExperience ? 'Week 1: Programming Fundamentals' : isWebDev ? 'Week 1: Web Development Essentials' : 'Week 1: Learning Basics';
-    const roadmap: Week[] = [
-      {
-        weekNumber: 1,
-        title,
-        lessonsCompleted: 0,
-        totalLessons: 5,
-        progress: 0,
-        lessons: [
-          { id: 'w1l1', title: 'Intro', description: 'Intro to topic', duration: '3 hours', completed: false },
-          { id: 'w1l2', title: 'Basics', description: 'Basics', duration: '3 hours', completed: false },
-          { id: 'w1l3', title: 'Practice', description: 'Practice', duration: '4 hours', completed: false },
-          { id: 'w1l4', title: 'Project', description: 'Small project', duration: '6 hours', completed: false },
-          { id: 'w1l5', title: 'Review', description: 'Review', duration: '2 hours', completed: false },
-        ],
-      },
+  // Helper: create lessons for a week topic
+  const createLessonsForWeek = (
+    topic: string,
+    level: 'beginner' | 'intermediate' | 'advanced',
+    pace: 'low' | 'medium' | 'high'
+  ): Lesson[] => {
+    const baseHours = pace === 'high' ? 6 : pace === 'medium' ? 4 : 3;
+    const dur = (h: number) => `${h} hours`;
+    const lessons: Lesson[] = [
+      { id: 'intro', title: `${topic}: Overview`, description: `Core ideas and why ${topic} matters`, duration: dur(Math.max(2, baseHours - 1)), completed: false },
+      { id: 'concepts', title: `${topic}: Key Concepts`, description: `Fundamentals and terminology`, duration: dur(baseHours), completed: false },
+      { id: 'hands-on', title: `${topic}: Hands-on`, description: `Guided coding/practice for ${topic}`, duration: dur(baseHours + 1), completed: false },
+      { id: 'project', title: `${topic}: Mini Project`, description: `Small build applying ${topic}`, duration: dur(baseHours + (level === 'beginner' ? 1 : 2)), completed: false },
+      { id: 'assessment', title: `${topic}: Quiz/Assessment`, description: `Check understanding of ${topic}`, duration: dur(2), completed: false },
+      { id: 'review', title: `${topic}: Review & Notes`, description: `Summarize learnings and plan next week`, duration: dur(1), completed: false },
     ];
-    return roadmap.slice(0, Math.min(weeksCount, 12));
+    // Beginners get one extra guided reading instead of assessment sometimes
+    if (level === 'beginner') {
+      lessons.splice(1, 0, { id: 'reading', title: `${topic}: Guided Reading`, description: `Curated articles/videos`, duration: dur(2), completed: false });
+    }
+    // ensure unique IDs per topic later
+    return lessons;
+  };
+
+  // Build a weekly topic syllabus from goal and preferences
+  const buildSyllabus = (
+    learningGoal: string,
+    preferredTopics: string[],
+    experience: string[]
+  ): string[] => {
+    const g = learningGoal.toLowerCase();
+    const none = experience.includes('None');
+    let core: string[] = [];
+    if (g.includes('web') || g.includes('frontend')) {
+      core = [
+        none ? 'Programming Fundamentals' : 'HTML & CSS Refresh',
+        'Responsive Layouts & Flex/Grid',
+        'JavaScript Basics',
+        'Modern JS (ES6+)',
+        'TypeScript Basics',
+        'React Fundamentals',
+        'React State & Effects',
+        'Routing & Architecture',
+        'API Integration',
+        'Styling Systems (Tailwind)',
+        'Project: Mini App',
+        'Testing & Deployment',
+      ];
+    } else if (g.includes('data') || g.includes('ml') || g.includes('ai')) {
+      core = [
+        none ? 'Python Basics' : 'Python Refresh',
+        'NumPy & Data Wrangling',
+        'Pandas for Analysis',
+        'Data Visualization',
+        'Statistics Essentials',
+        'ML Fundamentals',
+        'Model Training & Eval',
+        'Feature Engineering',
+        'Supervised Learning',
+        'Unsupervised Learning',
+        'Project: End-to-End',
+        'MLOps & Deployment',
+      ];
+    } else {
+      core = [
+        none ? 'Programming Fundamentals' : 'Language Basics',
+        'Problem Solving',
+        'Data Structures I',
+        'Data Structures II',
+        'Algorithms Basics',
+        'Version Control & Git',
+        'APIs & Networking',
+        'Project: CLI/App',
+        'Testing Basics',
+        'Debugging & Tooling',
+        'Project Polish',
+        'Review & Next Steps',
+      ];
+    }
+
+    // Place preferred topics earlier if provided
+    const prioritized = [
+      ...preferredTopics.filter((t) => core.some(c => c.toLowerCase().includes(t.toLowerCase()))),
+      ...core.filter((c) => !preferredTopics.some(t => c.toLowerCase().includes(t.toLowerCase()))),
+    ];
+    // Deduplicate while preserving order
+    return Array.from(new Set(prioritized));
+  };
+
+  const generateRoadmap = (params: {
+    learningGoal: string;
+    experience: string[];
+    timeCommitment: string; // '<10' | '10-20' | '20+'
+    skillLevel: string; // 'Beginner' | 'Intermediate' | 'Advanced'
+    preferredTopics: string[];
+  }): Week[] => {
+    const { learningGoal, experience, timeCommitment, skillLevel, preferredTopics } = params;
+    const level = skillLevel.toLowerCase() as 'beginner' | 'intermediate' | 'advanced';
+    const pace: 'low' | 'medium' | 'high' = timeCommitment === '20+' ? 'high' : timeCommitment === '10-20' ? 'medium' : 'low';
+    const weeksCount = timeCommitment === '20+' ? 8 : timeCommitment === '10-20' ? 12 : 16;
+
+    const syllabus = buildSyllabus(learningGoal, preferredTopics, experience).slice(0, 16);
+    const totalWeeks = Math.min(weeksCount, syllabus.length);
+
+    const weeks: Week[] = Array.from({ length: totalWeeks }).map((_, i) => {
+      const topic = syllabus[i];
+      const baseLessons = createLessonsForWeek(topic, level, pace).map((lsn, idx) => ({
+        ...lsn,
+        id: `w${i + 1}l${idx + 1}`,
+      }));
+      const totalLessons = Math.min(level === 'beginner' ? 6 : 5, baseLessons.length);
+      const lessons = baseLessons.slice(0, totalLessons);
+      return {
+        weekNumber: i + 1,
+        title: `Week ${i + 1}: ${topic}`,
+        lessonsCompleted: 0,
+        totalLessons,
+        progress: 0,
+        lessons,
+      };
+    });
+
+    return weeks;
   };
 
   const handleOnboardingComplete = (data: { learningGoal: string; experience: string[]; timeCommitment: string; skillLevel: string; preferredTopics: string[] }) => {
-    const newRoadmap = generateRoadmap(data.learningGoal, data.experience, data.timeCommitment);
+    const newRoadmap = generateRoadmap({
+      learningGoal: data.learningGoal,
+      experience: data.experience,
+      timeCommitment: data.timeCommitment,
+      skillLevel: data.skillLevel,
+      preferredTopics: data.preferredTopics,
+    });
     setWeeksData(newRoadmap);
     setUserData(prev => ({ ...prev, learningGoal: data.learningGoal }));
     setShowOnboarding(false);
@@ -98,11 +204,12 @@ export default function StudentRoutes() {
   };
 
   const handleStartLesson = (lessonId: string) => {
-    setWeeksData(prevWeeks => prevWeeks.map(week => ({
-      ...week,
-      lessons: week.lessons.map(lesson => lesson.id === lessonId ? { ...lesson, completed: !lesson.completed } : lesson),
-      lessonsCompleted: week.lessons.filter(l => l.completed).length,
-    })));
+    setWeeksData(prevWeeks => prevWeeks.map(week => {
+      const newLessons = week.lessons.map(lesson => lesson.id === lessonId ? { ...lesson, completed: !lesson.completed } : lesson);
+      const lessonsCompleted = newLessons.filter(l => l.completed).length;
+      const progress = week.totalLessons > 0 ? Math.round((lessonsCompleted / week.totalLessons) * 100) : 0;
+      return { ...week, lessons: newLessons, lessonsCompleted, progress };
+    }));
   };
 
   const handleSaveProfile = (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => {

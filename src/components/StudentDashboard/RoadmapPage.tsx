@@ -1,5 +1,7 @@
-import { Target, TrendingUp, CheckCircle2, Clock, Play, Map } from 'lucide-react';
+import { Target, TrendingUp, CheckCircle2, Clock, Play, Map, TreePine, List } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import RoadmapTree from './RoadmapTree';
 
 interface Lesson {
   id: string;
@@ -27,9 +29,25 @@ interface RoadmapPageProps {
 }
 
 export default function RoadmapPage({ learningGoal, weeks, onStartLesson, onCreateRoadmap, onDeleteRoadmap, hasRoadmap }: RoadmapPageProps) {
+  const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
+  const [selectedWeekNumber, setSelectedWeekNumber] = useState<number | null>(null);
+  const [focusWeek, setFocusWeek] = useState<number | null>(null);
+  const sectionRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const totalLessons = weeks.reduce((total, week) => total + week.totalLessons, 0);
   const completedLessons = weeks.reduce((total, week) => total + week.lessonsCompleted, 0);
   const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  // When switching to list view with a selected week, scroll to and highlight it.
+  useEffect(() => {
+    if (viewMode !== 'list' || !selectedWeekNumber) return;
+    const el = sectionRefs.current[selectedWeekNumber];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setFocusWeek(selectedWeekNumber);
+      const t = setTimeout(() => setFocusWeek(null), 1600);
+      return () => clearTimeout(t);
+    }
+  }, [viewMode, selectedWeekNumber]);
 
   // Show empty state if no roadmap
   if (!hasRoadmap) {
@@ -122,7 +140,7 @@ export default function RoadmapPage({ learningGoal, weeks, onStartLesson, onCrea
 
       {/* Roadmap Actions */}
       <motion.div
-        className="flex flex-wrap gap-3"
+        className="flex flex-wrap items-center gap-3"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -143,10 +161,45 @@ export default function RoadmapPage({ learningGoal, weeks, onStartLesson, onCrea
         >
           Delete Roadmap
         </motion.button>
+
+        {/* View toggle */}
+        <div className="ml-auto flex items-center gap-2 bg-dark-secondary border border-gray-800 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('tree')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
+              viewMode === 'tree'
+                ? 'bg-accent/20 text-accent border border-accent/30'
+                : 'text-gray-300 hover:text-accent'
+            }`}
+            aria-pressed={viewMode === 'tree'}
+          >
+            <TreePine className="w-4 h-4" /> Tree
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
+              viewMode === 'list'
+                ? 'bg-accent/20 text-accent border border-accent/30'
+                : 'text-gray-300 hover:text-accent'
+            }`}
+            aria-pressed={viewMode === 'list'}
+          >
+            <List className="w-4 h-4" /> List
+          </button>
+        </div>
       </motion.div>
 
-      {/* Week-by-Week Progress */}
-      <div className="space-y-4">
+      {/* Content */}
+      {viewMode === 'tree' ? (
+        <RoadmapTree
+          weeks={weeks}
+          onShowWeekInList={(week) => {
+            setSelectedWeekNumber(week.weekNumber);
+            setViewMode('list');
+          }}
+        />
+      ) : (
+        <div className="space-y-4">
         {weeks.map((week) => {
           const weekProgress = Math.round((week.lessonsCompleted / week.totalLessons) * 100);
           const isComplete = week.lessonsCompleted === week.totalLessons;
@@ -154,9 +207,10 @@ export default function RoadmapPage({ learningGoal, weeks, onStartLesson, onCrea
           return (
             <div
               key={week.weekNumber}
+              ref={(el) => { sectionRefs.current[week.weekNumber] = el; }}
               className={`bg-dark-secondary rounded-xl p-6 border transition-all ${
                 isComplete ? 'border-green-500/30 bg-green-500/5' : 'border-gray-800'
-              }`}
+              } ${focusWeek === week.weekNumber ? 'ring-2 ring-accent/60 ring-offset-2 ring-offset-dark-secondary' : ''}`}
             >
               {/* Week Header */}
               <div className="flex items-start justify-between gap-4 mb-4">
@@ -246,7 +300,8 @@ export default function RoadmapPage({ learningGoal, weeks, onStartLesson, onCrea
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

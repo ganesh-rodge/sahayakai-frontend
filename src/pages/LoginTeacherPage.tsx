@@ -7,9 +7,10 @@ interface Props {
   onSignup?: () => void;
   loading?: boolean;
   error?: string | null;
+  onForgot?: () => void;
 }
 
-export default function LoginTeacherPage({ onBack, onLogin, onSignup, loading, error }: Props) {
+export default function LoginTeacherPage({ onBack, onLogin, onSignup, loading, error, onForgot }: Props) {
   return (
     <motion.div
       className="min-h-screen bg-dark-primary flex flex-col"
@@ -34,7 +35,19 @@ export default function LoginTeacherPage({ onBack, onLogin, onSignup, loading, e
           <h2 className="text-3xl font-bold text-white mb-2">Teacher Login</h2>
           <p className="text-gray-400 mb-6">Sign in with your username to access teacher tools.</p>
 
-          <TeacherLogin onSubmit={(username, password) => onLogin?.(username, password)} loading={loading} serverError={error} />
+          <TeacherLogin
+            onSubmit={(username, password) => onLogin?.(username, password)}
+            loading={loading}
+            serverError={error}
+            onForgot={() => {
+              if (onForgot) {
+                onForgot();
+              } else {
+                window.history.pushState({ page: 'forgot-teacher' }, '', '#forgot-teacher');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            }}
+          />
 
           <div className="mt-6 text-center text-sm text-gray-400">
             New user?{' '}

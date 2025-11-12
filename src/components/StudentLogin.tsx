@@ -4,9 +4,10 @@ interface Props {
   onSubmit?: (username: string, password: string) => void;
   loading?: boolean;
   serverError?: string | null;
+  onForgot?: () => void;
 }
 
-export default function StudentLogin({ onSubmit, loading, serverError }: Props) {
+export default function StudentLogin({ onSubmit, loading, serverError, onForgot }: Props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +32,12 @@ export default function StudentLogin({ onSubmit, loading, serverError }: Props) 
           placeholder="yourusername"
           required
         />
+      </div>
+
+      <div className="flex justify-end -mt-2">
+        <button type="button" onClick={onForgot} className="text-xs text-accent hover:text-accent-light">
+          Forgot password?
+        </button>
       </div>
 
       <div>
