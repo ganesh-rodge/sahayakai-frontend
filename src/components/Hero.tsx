@@ -22,6 +22,15 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
     }
     return;
   }, [showExploreModal]);
+
+  // close on ESC for accessibility
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowExploreModal(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   return (
     <section className="min-h-screen bg-dark-primary flex items-center justify-center py-20 px-6 relative overflow-hidden">
       <motion.div
@@ -71,8 +80,9 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
           <div className="relative">
             <motion.button
               onClick={() => setShowExploreModal((s) => !s)}
-              className="px-8 py-3 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold w-full sm:w-auto"
-              whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(0, 212, 170, 0.4)" }}
+              className="px-8 py-3 rounded-lg font-semibold w-full sm:w-auto text-dark-primary
+                         bg-gradient-to-r from-accent to-accent-light shadow-[0_10px_30px_rgba(0,212,170,0.35)] hover:shadow-[0_16px_44px_rgba(0,212,170,0.5)]"
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300 }}
               aria-expanded={showExploreModal}
@@ -82,7 +92,7 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
             </motion.button>
             {showExploreModal && (
               <>
-                {/* overlay */}
+                {/* overlay to dismiss */}
                 <motion.div
                   className="fixed inset-0 bg-black/60 z-40"
                   initial={{ opacity: 0 }}
@@ -91,19 +101,16 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
                   onClick={() => setShowExploreModal(false)}
                 />
 
-                {/* modal dialog */}
+                {/* anchored popover card */}
                 <motion.div
-                  className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  className="absolute left-1/2 -translate-x-1/2 mt-3 z-50 w-[min(92vw,640px)]"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
                 >
-                  <div className="pointer-events-auto max-w-md w-full bg-dark-secondary border border-gray-800 rounded-2xl shadow-2xl p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-xl font-bold">Explore Sahayak-AI</h3>
-                        <p className="text-gray-400 text-sm">Choose a view to preview features for students or teachers.</p>
-                      </div>
+                  <div className="rounded-2xl border border-accent/30 ring-1 ring-accent/20 bg-[linear-gradient(180deg,rgba(0,212,170,0.12)_0%,rgba(0,212,170,0.05)_100%)] shadow-[0_18px_60px_rgba(0,212,170,0.18)] p-4 sm:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold">Explore Sahayak-AI</h3>
                       <button
                         aria-label="Close"
                         onClick={() => setShowExploreModal(false)}
@@ -113,17 +120,19 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
                       </button>
                     </div>
 
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <button
                         onClick={() => {
                           setShowExploreModal(false);
                           onExploreStudent();
                         }}
-                        className="flex flex-col items-start gap-2 p-4 bg-gradient-to-br from-blue-700 to-cyan-600 rounded-lg text-white shadow-md hover:scale-[1.02] transition-transform"
+                        className="flex items-start gap-3 p-4 rounded-xl border border-white/10 bg-dark-secondary/70 backdrop-blur-md hover:border-accent/40 hover:bg-dark-secondary/90 transition-colors text-left"
                       >
-                        <div className="text-3xl">🎓</div>
-                        <div className="font-semibold">Student Explore</div>
-                        <div className="text-xs text-blue-100/80">Personalized roadmaps, AI tutor, adaptive tests.</div>
+                        <span className="text-3xl leading-none">🎓</span>
+                        <span className="block">
+                          <span className="block font-semibold">Student Explore</span>
+                          <span className="block text-xs text-gray-400">Personalized roadmaps, AI tutor, adaptive tests.</span>
+                        </span>
                       </button>
 
                       <button
@@ -131,25 +140,17 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
                           setShowExploreModal(false);
                           onExploreTeacher();
                         }}
-                        className="flex flex-col items-start gap-2 p-4 bg-gradient-to-br from-purple-700 to-pink-600 rounded-lg text-white shadow-md hover:scale-[1.02] transition-transform"
+                        className="flex items-start gap-3 p-4 rounded-xl border border-white/10 bg-dark-secondary/70 backdrop-blur-md hover:border-accent/40 hover:bg-dark-secondary/90 transition-colors text-left"
                       >
-                        <div className="text-3xl">🧑‍🏫</div>
-                        <div className="font-semibold">Teacher Explore</div>
-                        <div className="text-xs text-pink-100/80">Lesson planning, content generator, analytics.</div>
+                        <span className="text-3xl leading-none">🧑‍🏫</span>
+                        <span className="block">
+                          <span className="block font-semibold">Teacher Explore</span>
+                          <span className="block text-xs text-gray-400">Lesson planning, content generator, analytics.</span>
+                        </span>
                       </button>
                     </div>
 
-                    <div className="mt-6 flex justify-end">
-                      <button
-                        onClick={() => {
-                          setShowExploreModal(false);
-                          onGetStarted();
-                        }}
-                        className="px-4 py-2 bg-accent/90 text-dark-primary font-semibold rounded-lg hover:brightness-105"
-                      >
-                        Get Started
-                      </button>
-                    </div>
+                    {/* No secondary CTA here as requested */}
                   </div>
                 </motion.div>
               </>
@@ -158,8 +159,8 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
 
           <motion.button
             onClick={onGetStarted}
-            className="px-8 py-3 border-2 border-gray-700 text-white rounded-lg font-semibold w-full sm:w-auto"
-            whileHover={{ scale: 1.05, backgroundColor: "#13131a", borderColor: "#00d4aa" }}
+            className="px-7 py-3 rounded-full font-semibold w-full sm:w-auto border border-white/10 bg-dark-secondary/70 backdrop-blur-md text-white hover:border-accent/50"
+            whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
