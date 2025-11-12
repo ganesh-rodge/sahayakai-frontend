@@ -61,8 +61,8 @@ export default function Navbar({ onLoginClick, onSignupClick, onLogoClick }: Nav
           </motion.div>
 
           <div className="hidden md:flex items-center gap-8">
-            <a
-              href="#about"
+            <button
+              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
               className={`relative text-gray-400 hover:text-accent transition-colors ${
                 activeSection === 'about' ? 'text-accent' : ''
               }`}
@@ -71,9 +71,9 @@ export default function Navbar({ onLoginClick, onSignupClick, onLogoClick }: Nav
               {activeSection === 'about' && (
                 <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-accent animate-fadeIn"></span>
               )}
-            </a>
-            <a
-              href="#services"
+            </button>
+            <button
+              onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
               className={`relative text-gray-400 hover:text-accent transition-colors ${
                 activeSection === 'services' ? 'text-accent' : ''
               }`}
@@ -82,9 +82,9 @@ export default function Navbar({ onLoginClick, onSignupClick, onLogoClick }: Nav
               {activeSection === 'services' && (
                 <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-accent animate-fadeIn"></span>
               )}
-            </a>
-            <a
-              href="#resources"
+            </button>
+            <button
+              onClick={() => document.getElementById('resources')?.scrollIntoView({ behavior: 'smooth' })}
               className={`relative text-gray-400 hover:text-accent transition-colors ${
                 activeSection === 'resources' ? 'text-accent' : ''
               }`}
@@ -93,9 +93,9 @@ export default function Navbar({ onLoginClick, onSignupClick, onLogoClick }: Nav
               {activeSection === 'resources' && (
                 <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-accent animate-fadeIn"></span>
               )}
-            </a>
-            <a
-              href="#features"
+            </button>
+            <button
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
               className={`relative text-gray-400 hover:text-accent transition-colors ${
                 activeSection === 'features' ? 'text-accent' : ''
               }`}
@@ -104,7 +104,7 @@ export default function Navbar({ onLoginClick, onSignupClick, onLogoClick }: Nav
               {activeSection === 'features' && (
                 <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-accent animate-fadeIn"></span>
               )}
-            </a>
+            </button>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -149,10 +149,10 @@ export default function Navbar({ onLoginClick, onSignupClick, onLogoClick }: Nav
               transition={{ duration: 0.3 }}
             >
               <div className="px-6 py-4 space-y-4">
-                <a href="#about" onClick={() => setIsMenuOpen(false)} className="block text-gray-400 hover:text-accent transition-colors py-2">About</a>
-                <a href="#services" onClick={() => setIsMenuOpen(false)} className="block text-gray-400 hover:text-accent transition-colors py-2">Services</a>
-                <a href="#resources" onClick={() => setIsMenuOpen(false)} className="block text-gray-400 hover:text-accent transition-colors py-2">Resources</a>
-                <a href="#features" onClick={() => setIsMenuOpen(false)} className="block text-gray-400 hover:text-accent transition-colors py-2">Features</a>
+                <button onClick={() => { document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); setIsMenuOpen(false); }} className="block w-full text-left text-gray-400 hover:text-accent transition-colors py-2">About</button>
+                <button onClick={() => { document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); setIsMenuOpen(false); }} className="block w-full text-left text-gray-400 hover:text-accent transition-colors py-2">Services</button>
+                <button onClick={() => { document.getElementById('resources')?.scrollIntoView({ behavior: 'smooth' }); setIsMenuOpen(false); }} className="block w-full text-left text-gray-400 hover:text-accent transition-colors py-2">Resources</button>
+                <button onClick={() => { document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); setIsMenuOpen(false); }} className="block w-full text-left text-gray-400 hover:text-accent transition-colors py-2">Features</button>
 
                 <div className="pt-4 space-y-3 border-t border-gray-800">
                   <button

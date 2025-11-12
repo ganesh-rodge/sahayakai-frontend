@@ -24,10 +24,10 @@ export default function Footer({ onNavigate }: FooterProps) {
           <div>
             <h4 className="font-bold mb-4">Platform</h4>
             <ul className="space-y-2 text-gray-400 text-sm">
-              <li><a href="#about" className="hover:text-accent transition-colors">About</a></li>
-              <li><a href="#services" className="hover:text-accent transition-colors">Services</a></li>
-              <li><a href="#resources" className="hover:text-accent transition-colors">Resources</a></li>
-              <li><a href="#features" className="hover:text-accent transition-colors">Features</a></li>
+              <li><button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">About</button></li>
+              <li><button onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Services</button></li>
+              <li><button onClick={() => document.getElementById('resources')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Resources</button></li>
+              <li><button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-accent transition-colors bg-none border-none cursor-pointer">Features</button></li>
             </ul>
           </div>
 

@@ -40,12 +40,7 @@ export default function LoginTeacherPage({ onBack, onLogin, onSignup, loading, e
             loading={loading}
             serverError={error}
             onForgot={() => {
-              if (onForgot) {
-                onForgot();
-              } else {
-                window.history.pushState({ page: 'forgot-teacher' }, '', '#forgot-teacher');
-                window.dispatchEvent(new PopStateEvent('popstate'));
-              }
+              onForgot?.();
             }}
           />
 
