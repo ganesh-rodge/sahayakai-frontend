@@ -101,14 +101,14 @@ export default function Hero({ onExploreStudent, onExploreTeacher, onGetStarted 
                   onClick={() => setShowExploreModal(false)}
                 />
 
-                {/* anchored popover card */}
+                {/* fullscreen-centered popover card for reliable responsiveness */}
                 <motion.div
-                  className="absolute left-1/2 -translate-x-1/2 mt-3 z-50 w-[min(92vw,640px)]"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
                 >
-                  <div className="rounded-2xl border border-accent/30 ring-1 ring-accent/20 bg-[linear-gradient(180deg,rgba(0,212,170,0.12)_0%,rgba(0,212,170,0.05)_100%)] shadow-[0_18px_60px_rgba(0,212,170,0.18)] p-4 sm:p-6">
+                  <div className="pointer-events-auto w-[min(96vw,760px)] max-w-2xl rounded-2xl border border-accent/30 ring-1 ring-accent/20 bg-dark-secondary shadow-[0_18px_60px_rgba(0,212,170,0.18)] p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold">Explore Sahayak-AI</h3>
                       <button
