@@ -7,7 +7,7 @@ export default function About() {
     'rounded-2xl p-5 text-center border border-white/6 ring-1 ring-white/3 bg-transparent backdrop-blur-sm shadow-[inset_0_6px_12px_rgba(0,0,0,0.6)] transition-transform duration-300';
 
   const featureCardBase =
-    'group relative overflow-hidden rounded-2xl w-36 h-36 md:w-40 md:h-40 border border-white/6 ring-1 ring-white/3 backdrop-blur-xl bg-[rgba(255,255,255,0.02)] shadow-[0_10px_30px_rgba(0,0,0,0.6)] transform-gpu will-change-transform flex flex-col items-center justify-center';
+    'group relative overflow-hidden rounded-2xl w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 border border-white/6 ring-1 ring-white/3 backdrop-blur-xl bg-[rgba(255,255,255,0.02)] shadow-[0_10px_30px_rgba(0,0,0,0.6)] transform-gpu will-change-transform flex flex-col items-center justify-center';
 
   // Circular orbit animation - cards move in a perfect circle with larger radius
   const getCircularOrbit = (index: number, total = 3, radius = 130): any => {
@@ -122,8 +122,7 @@ export default function About() {
 
           {/* Right: circular floating feature cards */}
           <motion.div
-            className="relative h-96 flex items-center justify-center"
-            style={{ marginTop: '-1cm' }}
+            className="relative h-80 sm:h-96 lg:h-[28rem] flex items-center justify-center mt-8 md:mt-0"
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}

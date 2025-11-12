@@ -7,7 +7,7 @@ interface LoginPageProps {
   onChooseRole?: (role: 'teacher' | 'student') => void;
 }
 
-export default function LoginPage({ onBack, onSignupTeacher, onSignupStudent, onChooseRole }: LoginPageProps) {
+export default function LoginPage({ onBack: _onBack, onSignupTeacher, onSignupStudent, onChooseRole }: LoginPageProps) {
   return (
     <motion.div
       className="min-h-screen bg-dark-primary flex flex-col"
@@ -15,12 +15,7 @@ export default function LoginPage({ onBack, onSignupTeacher, onSignupStudent, on
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors z-50 hover:scale-110 font-medium"
-      >
-        ← Back
-      </button>
+      {/* Back button intentionally removed from the login role selection screen */}
 
       <div className="flex-1 grid md:grid-cols-2 gap-0">
         <div className="bg-dark-secondary flex items-center justify-center p-8 md:p-12 border-r border-gray-800">

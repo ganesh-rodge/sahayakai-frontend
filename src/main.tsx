@@ -7,10 +7,12 @@ import App from './app/App.tsx'
 import Chatbot from './components/Chatbot/Chatbot'
 import StudentRoutes from './routes/StudentRoutes';
 import TeacherRoutes from './routes/TeacherRoutes';
+import ScrollToTop from './components/ScrollToTop';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/student/*" element={<StudentRoutes />} />
         <Route path="/teacher/*" element={<TeacherRoutes />} />

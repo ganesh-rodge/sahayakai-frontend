@@ -152,11 +152,6 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
               <div className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(1200px_200px_at_100%_0%,rgba(0,212,170,0.15),transparent)]" />
 
               <header className="relative">
-                <div className="absolute top-4 right-4">
-                  <span className="text-xs text-gray-400/90 bg-white/5 border border-white/10 px-2 py-1 rounded-full backdrop-blur-sm">
-                    {feature.stats.created} {feature.stats.unit}
-                  </span>
-                </div>
                 <div className="mx-auto mb-5 h-16 w-16 grid place-items-center rounded-2xl
                                 bg-accent/12 text-accent text-3xl
                                 ring-1 ring-accent/30 shadow-[0_0_22px_rgba(0,212,170,0.22)]">
