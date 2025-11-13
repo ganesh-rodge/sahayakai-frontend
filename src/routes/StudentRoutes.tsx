@@ -6,6 +6,7 @@ import LessonsPage from '../components/StudentDashboard/LessonsPage';
 import RoadmapPage from '../components/StudentDashboard/RoadmapPage';
 import ProfilePage from '../components/StudentDashboard/ProfilePage';
 import OnboardingFlow from '../components/StudentDashboard/OnboardingFlow';
+import { useAuth } from '../utils/auth';
 
 interface Lesson {
   id: string;
@@ -35,6 +36,7 @@ export default function StudentRoutes() {
     userEmail: '',
     learningGoal: '',
     profilePicture: 'https://avatar.iran.liara.run/public/boy',
+    weeksNeeded: 0,
   });
 
   const [weeksData, setWeeksData] = useState<Week[]>([]);
@@ -179,7 +181,7 @@ export default function StudentRoutes() {
     return weeks;
   };
 
-  const handleOnboardingComplete = (data: { learningGoal: string; experience: string[]; timeCommitment: string; skillLevel: string; preferredTopics: string[] }) => {
+  const handleOnboardingComplete = (data: { learningGoal: string; experience: string[]; timeCommitment: string; skillLevel: string; preferredTopics: string[]; weeksNeeded?: number }) => {
     const newRoadmap = generateRoadmap({
       learningGoal: data.learningGoal,
       experience: data.experience,
@@ -188,7 +190,7 @@ export default function StudentRoutes() {
       preferredTopics: data.preferredTopics,
     });
     setWeeksData(newRoadmap);
-    setUserData(prev => ({ ...prev, learningGoal: data.learningGoal }));
+    setUserData(prev => ({ ...prev, learningGoal: data.learningGoal, weeksNeeded: data.weeksNeeded }));
     setShowOnboarding(false);
     navigate('/student/roadmap');
   };
@@ -215,6 +217,58 @@ export default function StudentRoutes() {
   const handleSaveProfile = (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => {
     setUserData({ ...data, profilePicture: data.profilePicture || userData.profilePicture });
   };
+
+  // Wrapper that maps auth `user` + `profile` into the existing ProfilePage props
+  function ProfileWithAuth({
+    weeksData,
+    onSaveProfile,
+  }: {
+    weeksData: Week[];
+    onSaveProfile: (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => void;
+  }) {
+    const auth = useAuth();
+
+    // Try to refresh me if we don't have user yet
+    useEffect(() => {
+      if (!auth.user && !auth.loading) {
+        auth.refresh().catch(() => {});
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const meUser = auth.user || null;
+    const meProfile = auth.profile || null;
+
+    const userName = meProfile?.firstName || meUser?.username || meUser?.email || 'Student';
+    const userEmail = meUser?.email || meProfile?.email || '';
+    const learningGoal = meProfile?.eduLevel || '';
+    const profilePicture = meProfile?.livePhoto || meProfile?.photo || userData.profilePicture || 'https://avatar.iran.liara.run/public/boy';
+
+    const totalWeeks = weeksData.length;
+    const totalLessons = weeksData.reduce((s, w) => s + w.totalLessons, 0);
+    const lessonsCompleted = weeksData.reduce((s, w) => s + w.lessonsCompleted, 0);
+    const studyTimeHours = 0;
+
+    const handleSave = (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => {
+      // update local state for immediate feedback
+      onSaveProfile(data);
+      // (Optional) persist to backend later
+    };
+
+    return (
+      <ProfilePage
+        userName={userName}
+        userEmail={userEmail}
+        learningGoal={learningGoal}
+        profilePicture={profilePicture}
+        totalWeeks={totalWeeks}
+        totalLessons={totalLessons}
+        lessonsCompleted={lessonsCompleted}
+        studyTimeHours={studyTimeHours}
+        onSaveProfile={handleSave}
+      />
+    );
+  }
 
   // derive current page from location
   const path = location.pathname.replace(/^\/student\/?/, '') || 'dashboard';
@@ -252,7 +306,7 @@ export default function StudentRoutes() {
         )} />
         <Route path="lessons" element={<LessonsPage weeks={weeksData} onStartLesson={handleStartLesson} hasRoadmap={weeksData.length>0} onCreateRoadmap={handleCreateRoadmap} />} />
         <Route path="roadmap" element={<RoadmapPage learningGoal={userData.learningGoal} weeks={weeksData} onStartLesson={handleStartLesson} onCreateRoadmap={handleCreateRoadmap} onDeleteRoadmap={handleDeleteRoadmap} hasRoadmap={weeksData.length>0} />} />
-        <Route path="profile" element={<ProfilePage userName={userData.userName} userEmail={userData.userEmail} learningGoal={userData.learningGoal} profilePicture={userData.profilePicture} totalWeeks={weeksData.length} totalLessons={weeksData.reduce((s,w)=>s+w.totalLessons,0)} lessonsCompleted={weeksData.reduce((s,w)=>s+w.lessonsCompleted,0)} studyTimeHours={0} onSaveProfile={handleSaveProfile} />} />
+        <Route path="profile" element={<ProfileWithAuth weeksData={weeksData} onSaveProfile={handleSaveProfile} />} />
 
         {/* Optional routes */}
         <Route path="settings" element={<div className="p-6 text-white">Settings coming soon</div>} />

@@ -28,6 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { getJSON } = await import('../utils/api');
       const me = await getJSON('/user/me');
+      // Log full /user/me response for debugging
+      // eslint-disable-next-line no-console
+      console.log('[auth] refresh /user/me response:', me);
       const meUser = me?.data?.user || me?.user || null;
       const meProfile = me?.data?.profile || null;
       setUser(meUser);

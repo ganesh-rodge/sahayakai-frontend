@@ -9,6 +9,7 @@ interface OnboardingFlowProps {
     timeCommitment: string;
     skillLevel: string;
     preferredTopics: string[];
+    weeksNeeded: number;
   }) => void;
   onBack?: () => void;
 }
@@ -21,6 +22,7 @@ export default function OnboardingFlow({ onComplete, onBack }: OnboardingFlowPro
   const [timeCommitment, setTimeCommitment] = useState('');
   const [skillLevel, setSkillLevel] = useState('');
   const [preferredTopics, setPreferredTopics] = useState<string[]>([]);
+  const [weeksNeeded, setWeeksNeeded] = useState<number | null>(null);
 
   // Field definitions with custom questions
   const fields = {
@@ -77,10 +79,10 @@ export default function OnboardingFlow({ onComplete, onBack }: OnboardingFlowPro
   };
 
   const handleNext = () => {
-    if (step < 5) {
+    if (step < 6) {
       setStep(step + 1);
     } else {
-      onComplete({ learningGoal: learningGoal || selectedField, experience, timeCommitment, skillLevel, preferredTopics });
+      onComplete({ learningGoal: learningGoal || selectedField, experience, timeCommitment, skillLevel, preferredTopics, weeksNeeded: weeksNeeded || 0 } as any);
     }
   };
 
@@ -104,10 +106,11 @@ export default function OnboardingFlow({ onComplete, onBack }: OnboardingFlowPro
     if (step === 3) return skillLevel.length > 0;
     if (step === 4) return preferredTopics.length > 0;
     if (step === 5) return timeCommitment.length > 0;
+    if (step === 6) return typeof weeksNeeded === 'number' && weeksNeeded > 0;
     return false;
   };
 
-  const totalSteps = 6; // Including field selection
+  const totalSteps = 7; // Including field selection + weekCommitment
   const progress = (step / (totalSteps - 1)) * 100;
   
   const currentField = fields[selectedField as keyof typeof fields];
@@ -145,7 +148,7 @@ export default function OnboardingFlow({ onComplete, onBack }: OnboardingFlowPro
         {step > 0 && (
           <div className="mb-8">
             <div className="text-center text-sm text-gray-400 mb-4">
-              Question {step} of 5 <span className="text-accent">• {Math.round(progress)}% complete</span>
+              Question {step} of {totalSteps - 1} <span className="text-accent">• {Math.round(progress)}% complete</span>
             </div>
             <div className="h-2 bg-dark-tertiary rounded-full overflow-hidden">
               <motion.div
@@ -409,6 +412,36 @@ export default function OnboardingFlow({ onComplete, onBack }: OnboardingFlowPro
               </div>
             </div>
           )}
+
+                  {/* Step 6: Weeks Needed (number input) */}
+                  {step === 6 && (
+                    <div>
+                      <div className="flex items-center justify-center mb-6">
+                        <div className="p-4 bg-accent/20 rounded-full">
+                          <Map className="w-8 h-8 text-accent" />
+                        </div>
+                      </div>
+                      <h2 className="text-2xl font-bold text-center mb-2">How Many Weeks?</h2>
+                      <p className="text-gray-400 text-center mb-8">Enter how many weeks you expect it will take to reach this learning goal.</p>
+
+                      <div className="space-y-4">
+                        <label className="block text-sm font-medium text-gray-300">Number of weeks</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={weeksNeeded ?? ''}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (Number.isNaN(v) || v <= 0) setWeeksNeeded(null);
+                            else setWeeksNeeded(v);
+                          }}
+                          placeholder="e.g., 12"
+                          className="w-full px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:outline-none focus:border-accent transition-colors text-white"
+                        />
+                        <p className="text-xs text-gray-500">Tip: choose realistic weeks based on your time commitment.</p>
+                      </div>
+                    </div>
+                  )}
 
           {/* Navigation Buttons */}
           <div className="flex gap-3 mt-8">

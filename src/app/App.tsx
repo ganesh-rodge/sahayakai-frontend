@@ -26,6 +26,7 @@ import Security from '../pages/legal/Security';
 import TeacherDashboard from '../pages/TeacherDashboard';
 import StudentDashboard from '../components/StudentDashboard';
 import { AuthProvider, useAuth } from '../utils/auth';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { Navigate } from 'react-router-dom';
 
 function App() {
@@ -63,6 +64,9 @@ function App() {
       try {
         const { getJSON } = await import('../utils/api');
         const me = await getJSON('/user/me');
+        // Log full /user/me response after login
+        // eslint-disable-next-line no-console
+        console.log('[auth] /user/me response:', me);
         const meUser = me?.data?.user || me?.user;
         const meProfile = me?.data?.profile;
 
@@ -167,6 +171,7 @@ function App() {
   return (
     <AuthProvider>
       <ToastContainer />
+      <ErrorBoundary>
       <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<LoginPage onBack={() => navigate('/')} onSignupTeacher={() => navigate('/signup-teacher')} onSignupStudent={() => navigate('/signup-student')} onChooseRole={(role) => navigate(role === 'teacher' ? '/login/teacher' : '/login/student')} />} />
@@ -191,9 +196,11 @@ function App() {
       <Route path="/terms" element={<WithShell><Terms /></WithShell>} />
       <Route path="/security" element={<WithShell><Security /></WithShell>} />
 
-      <Route path="/teacher-dashboard" element={<RequireAuth role="teacher"><TeacherDashboard /></RequireAuth>} />
-      <Route path="/student-dashboard" element={<RequireAuth role="student"><StudentDashboard onLogout={() => navigate('/')} /></RequireAuth>} />
+      {/* Temporarily render dashboards without RequireAuth to debug blank screen */}
+      <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+      <Route path="/student-dashboard" element={<StudentDashboard onLogout={() => navigate('/')} />} />
       </Routes>
+      </ErrorBoundary>
     </AuthProvider>
   );
 }
