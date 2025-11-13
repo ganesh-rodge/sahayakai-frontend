@@ -25,9 +25,8 @@ import Terms from '../pages/legal/Terms';
 import Security from '../pages/legal/Security';
 import TeacherDashboard from '../pages/TeacherDashboard';
 import StudentDashboard from '../components/StudentDashboard';
-import { AuthProvider, useAuth } from '../utils/auth';
+import { AuthProvider } from '../utils/auth';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { Navigate } from 'react-router-dom';
 
 function App() {
   const navigate = useNavigate();
@@ -51,8 +50,7 @@ function App() {
 
       // Backend sets HttpOnly cookies for access/refresh tokens; do not set cookies manually here.
       // We still keep any tokens returned in the response body in case we want to use them client-side later.
-      const access = data?.data?.accessToken || data?.accessToken || data?.token;
-      const refresh = data?.data?.refreshToken || data?.refreshToken;
+      // Access/refresh tokens are set as HttpOnly cookies by backend; values in body are optional
 
       // Optionally store profile info (from login response)
       const user = data?.data?.user || data?.user;
@@ -143,30 +141,7 @@ function App() {
     </div>
   );
 
-  function RequireAuth({ children, role }: { children: JSX.Element, role: 'teacher' | 'student' }) {
-    const { user, loading } = useAuth();
-    if (loading) return <div />; // or spinner
-    if (!user) {
-      // attempt to hydrate from localStorage (login flow may have just set it)
-      try {
-        const raw = localStorage.getItem('currentUser');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.role === role) return children;
-          toast.error(role === 'teacher' ? 'No teacher is assigned with the current email id/password' : 'Account does not have student access');
-          return <Navigate to="/login" replace />;
-        }
-      } catch (e) {}
-
-      toast.error('Not authenticated. Please login.');
-      return <Navigate to="/login" replace />;
-    }
-    if (user.role !== role) {
-      toast.error(role === 'teacher' ? 'No teacher is assigned with the current email id/password' : 'Account does not have student access');
-      return <Navigate to="/login" replace />;
-    }
-    return children;
-  }
+  // Note: RequireAuth temporarily removed while debugging; dashboards rendered openly below.
 
   return (
     <AuthProvider>
