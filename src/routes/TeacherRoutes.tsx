@@ -24,6 +24,12 @@ export default function TeacherRoutes() {
     return (fromProfile || fromUser || fromStorage || 'Teacher').trim();
   }, [user, profile]);
 
+  const institutionName = useMemo(() => {
+    const schoolInst = (profile as any)?.school?.instituteName || (profile as any)?.schoolName;
+    const collegeInst = (profile as any)?.college?.collegeName || (profile as any)?.collegeName;
+    return schoolInst || collegeInst || '';
+  }, [profile]);
+
   // derive current page from location
   const path = location.pathname.replace(/^\/teacher\/?/, '') || 'dashboard';
 
@@ -40,9 +46,17 @@ export default function TeacherRoutes() {
     }
   }, [loading, user, refresh]);
 
+  useEffect(() => {
+    const level = String((profile as any)?.eduLevel || '').toLowerCase();
+    if (level === 'school' || level === 'college') {
+      setInstitutionType(level as 'school' | 'college');
+      try { localStorage.setItem('teacherInstitutionType', level); } catch {}
+    }
+  }, [profile]);
+
   return (
     <Routes>
-      <Route path="/" element={<DashboardLayout currentPage={path as any} onLogout={logout} userName={teacherName} userEmail={(user as any)?.email || ''} profilePicture={(profile as any)?.avatarUrl || ''} />}>
+      <Route path="/" element={<DashboardLayout currentPage={path as any} onLogout={logout} userName={teacherName} userEmail={(user as any)?.email || ''} secondaryText={institutionName} profilePicture={(profile as any)?.livePhoto || (profile as any)?.avatarUrl || ''} />}>
         <Route index element={<Navigate to="dashboard" replace />} />
   <Route path="dashboard" element={<DashboardHome teacherName={teacherName} institutionType={institutionType} onChangeInstitution={(t: 'school' | 'college') => setInstitutionType(t)} />} />
         <Route path="content-generator" element={<ContentGenerator onBack={() => navigate('/teacher/dashboard')} />} />

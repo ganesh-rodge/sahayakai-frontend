@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { getJSON } from '../../utils/api';
 
 type InstitutionType = 'school' | 'college';
 
@@ -38,8 +39,10 @@ export default function Profile({ onBack, onSaved }: ProfileProps) {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<ProfileData>(DEFAULT_PROFILE);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // Load from localStorage
+  // Load from localStorage first, then fetch from API
   useEffect(() => {
     try {
       const raw = localStorage.getItem('teacherProfile');
@@ -48,6 +51,61 @@ export default function Profile({ onBack, onSaved }: ProfileProps) {
         setProfile({ ...DEFAULT_PROFILE, ...parsed });
       }
     } catch {}
+
+    const mapApiToProfile = (data: any): ProfileData => {
+      const first = data?.firstName || data?.firstname || data?.first_name || '';
+      const middle = data?.middleName || data?.middlename || '';
+      const last = data?.lastName || data?.lastname || data?.last_name || '';
+      const name = [first, middle, last].filter(Boolean).join(' ').trim() || data?.username || (typeof data?.email === 'string' ? data.email.split('@')[0] : DEFAULT_PROFILE.name);
+
+      const eduLevel = (data?.eduLevel || '').toString().toLowerCase();
+      const institutionType: InstitutionType = eduLevel === 'school' ? 'school' : eduLevel === 'college' ? 'college' : DEFAULT_PROFILE.institutionType;
+      const institution = data?.schoolName || data?.collegeName || data?.deptName || data?.department || '';
+      const subject = data?.specialization || data?.schoolSubjects || data?.subjects || data?.role || '';
+
+      const merged: ProfileData = {
+        ...DEFAULT_PROFILE,
+        name,
+        email: data?.email || DEFAULT_PROFILE.email,
+        phone: data?.phone || DEFAULT_PROFILE.phone,
+        subject: subject || DEFAULT_PROFILE.subject,
+        institution: institution || DEFAULT_PROFILE.institution,
+        institutionType,
+        bio: DEFAULT_PROFILE.bio,
+        avatarType: DEFAULT_PROFILE.avatarType,
+        avatarEmoji: DEFAULT_PROFILE.avatarEmoji,
+        avatarImageDataUrl: DEFAULT_PROFILE.avatarImageDataUrl,
+      };
+      return merged;
+    };
+
+    const fetchProfile = async () => {
+      setLoading(true);
+      setApiError(null);
+      try {
+        // Prefer /user/me if available; else fallback to /user/register as requested
+        let res: any | null = null;
+        try {
+          res = await getJSON('/user/me');
+        } catch {
+          // ignore and try /user/register
+        }
+        if (!res) {
+          res = await getJSON('/user/register');
+        }
+        const payload = res?.data || res;
+        const userObj = payload?.user || payload;
+        const mapped = mapApiToProfile(userObj || {});
+        setProfile(mapped);
+        try { localStorage.setItem('teacherProfile', JSON.stringify(mapped)); } catch {}
+      } catch (e: any) {
+        setApiError(e?.message || 'Failed to fetch profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   const setField = <K extends keyof ProfileData>(key: K, value: ProfileData[K]) => {
@@ -101,6 +159,12 @@ export default function Profile({ onBack, onSaved }: ProfileProps) {
       <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-6 flex items-center gap-2">← Back</button>
 
       <div className="bg-dark-secondary border border-gray-800 rounded-2xl p-6 md:p-8">
+        {apiError && (
+          <div className="mb-4 text-sm text-red-400">{apiError}</div>
+        )}
+        {loading && (
+          <div className="mb-4 text-sm text-gray-400">Loading profile from server…</div>
+        )}
         <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center md:items-start">
           <Avatar />
 
