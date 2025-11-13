@@ -56,13 +56,20 @@ export default function RoadmapTree({ weeks, onWeekClick, onShowWeekInList }: Ro
     const isSmall = width < 640;
     const isMedium = width >= 640 && width < 1024;
 
-    const NODE_W = isSmall ? 180 : isMedium ? 210 : 240;
+    // Keep a preferred base size, but ensure each node fits within half the viewport minus padding
+    const BASE_NODE_W = isSmall ? 180 : isMedium ? 210 : 240;
+    const PAD = 12; // horizontal edge padding
+    const NODE_W = Math.max(140, Math.min(BASE_NODE_W, Math.floor(width / 2 - PAD)));
     const NODE_H = isSmall ? 76 : 86;
     const ROW_GAP = isSmall ? 120 : isMedium ? 140 : 160;
     const TOP_PAD = 60;
     const BOTTOM_PAD = 120;
     const centerX = width / 2;
-  const branchLen = clamp(width * 0.24, 160, 320);
+
+    // Choose a branch length that never pushes nodes off-screen
+    const preferred = width * 0.24; // visual spacing target
+    const maxBranch = Math.max(0, centerX - NODE_W - PAD);
+    const branchLen = clamp(preferred, 0, Math.min(320, maxBranch));
 
     const totalHeight = TOP_PAD + weeks.length * ROW_GAP + BOTTOM_PAD;
 
@@ -153,7 +160,7 @@ export default function RoadmapTree({ weeks, onWeekClick, onShowWeekInList }: Ro
       {/* Scrollable area */}
       <div
         ref={containerRef}
-        className="relative h-[560px] sm:h-[640px] md:h-[720px] overflow-auto select-none"
+        className="relative h-[70vh] md:h-[72vh] overflow-auto select-none"
         onMouseDown={onBackgroundMouseDown}
         onMouseMove={onBackgroundMouseMove}
         onMouseUp={onBackgroundMouseUp}

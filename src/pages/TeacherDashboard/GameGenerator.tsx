@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface GameGeneratorProps {
   onBack: () => void;
@@ -22,6 +22,27 @@ export default function GameGenerator({ onBack, onSave }: GameGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedGame, setGeneratedGame] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Preload from 'Open' action
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('teacherOpenWork');
+      if (!raw) return;
+      const item = JSON.parse(raw);
+      if (item?.toolId !== 'game-generator') return;
+      const c = item.content;
+      if (typeof c === 'string') {
+        setGeneratedGame(c);
+      } else if (c && typeof c === 'object') {
+        if (c.gameType) setGameType(c.gameType);
+        if (c.gradeLevel) setGradeLevel(c.gradeLevel);
+        if (c.topicTheme) setTopicTheme(c.topicTheme);
+      }
+    } catch {}
+    finally {
+      localStorage.removeItem('teacherOpenWork');
+    }
+  }, []);
 
   const handleGenerate = async () => {
     const newErrors: Record<string, string> = {};

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface VisualAidGeneratorProps {
   onBack: () => void;
@@ -19,6 +19,26 @@ export default function VisualAidGenerator({ onBack, onSave }: VisualAidGenerato
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedVisual, setGeneratedVisual] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Preload from 'Open' action
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('teacherOpenWork');
+      if (!raw) return;
+      const item = JSON.parse(raw);
+      if (item?.toolId !== 'visual-aid') return;
+      const c = item.content;
+      if (typeof c === 'string') {
+        setGeneratedVisual(c);
+      } else if (c && typeof c === 'object') {
+        if (c.visualType) setVisualType(c.visualType);
+        if (c.description) setDescription(c.description);
+      }
+    } catch {}
+    finally {
+      localStorage.removeItem('teacherOpenWork');
+    }
+  }, []);
 
   const handleGenerate = async () => {
     const newErrors: Record<string, string> = {};

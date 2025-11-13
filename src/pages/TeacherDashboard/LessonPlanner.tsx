@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface LessonPlannerProps {
   onBack: () => void;
@@ -18,6 +18,28 @@ export default function LessonPlanner({ onBack, onSave }: LessonPlannerProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Preload from 'Open' action
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('teacherOpenWork');
+      if (!raw) return;
+      const item = JSON.parse(raw);
+      if (item?.toolId !== 'lesson-planner') return;
+      const c = item.content;
+      if (typeof c === 'string') {
+        setGeneratedPlan(c);
+      } else if (c && typeof c === 'object') {
+        if (c.subject) setSubject(c.subject);
+        if (c.topic) setTopic(c.topic);
+        if (c.duration) setDuration(c.duration);
+        if (c.gradeLevel) setGradeLevel(c.gradeLevel);
+      }
+    } catch {}
+    finally {
+      localStorage.removeItem('teacherOpenWork');
+    }
+  }, []);
 
   const handleGenerate = async () => {
     const newErrors: Record<string, string> = {};

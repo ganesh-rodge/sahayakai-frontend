@@ -17,7 +17,7 @@ export default function DashboardHome({ teacherName, institutionType, onChangeIn
     { id: 'visual-aid', icon: '🎨', title: 'Visual Aid Generator', description: 'Create diagrams, charts, and visuals', forSchool: true, forCollege: true },
     { id: 'lesson-planner', icon: '📅', title: 'Lesson Planner', description: 'Generate structured weekly lesson plans', forSchool: true, forCollege: true },
     { id: 'game-generator', icon: '🎮', title: 'Game Generator', description: 'Create engaging educational games', forSchool: true, forCollege: false },
-    { id: 'audio-assessment', icon: '🎤', title: 'Audio Reading Assessment', description: 'Evaluate student reading skills using speech-to-text', forSchool: true, forCollege: false },
+    // Audio Reading Assessment removed
   ], []);
 
   const filtered = tools.filter(t => institutionType === 'school' ? t.forSchool : t.forCollege);

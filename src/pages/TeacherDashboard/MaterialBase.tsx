@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface MaterialBaseProps {
   onBack: () => void;
@@ -15,6 +15,25 @@ export default function MaterialBase({ onBack, onSave }: MaterialBaseProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedWorksheet, setGeneratedWorksheet] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Preload from 'Open' action
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('teacherOpenWork');
+      if (!raw) return;
+      const item = JSON.parse(raw);
+      if (item?.toolId !== 'material-base') return;
+      const c = item.content;
+      if (typeof c === 'string') {
+        setGeneratedWorksheet(c);
+      } else if (c && typeof c === 'object') {
+        if (c.gradeLevel) setGradeLevel(c.gradeLevel);
+      }
+    } catch {}
+    finally {
+      localStorage.removeItem('teacherOpenWork');
+    }
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

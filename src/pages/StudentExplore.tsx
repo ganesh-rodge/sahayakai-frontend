@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import ExploreFeatureModal, { type ExploreFeatureData } from '../components/ExploreFeatureModal';
 
 interface StudentExploreProps {
   onBack: () => void;
@@ -6,6 +8,8 @@ interface StudentExploreProps {
 }
 
 export default function StudentExplore({ onBack, onGetStarted }: StudentExploreProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selected, setSelected] = useState<ExploreFeatureData | null>(null);
 
   const features = [
     {
@@ -107,11 +111,22 @@ export default function StudentExplore({ onBack, onGetStarted }: StudentExploreP
             Discover how Sahayak-AI empowers students with personalized learning experiences, smart tools, and real-time guidance.
           </p>
         </motion.div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mb-20">
           {features.map((feature, index) => (
-            <motion.div
+            <motion.button
               key={index}
-              className="group relative overflow-hidden rounded-2xl p-6 flex flex-col h-full
+              onClick={() => {
+                setSelected({
+                  icon: feature.icon,
+                  title: feature.title,
+                  description: feature.description,
+                  items: feature.details,
+                  ctaLabel: 'Get Started',
+                  onCta: onGetStarted,
+                });
+                setModalOpen(true);
+              }}
+              className="text-left group relative overflow-hidden rounded-2xl p-6 flex flex-col h-full
                          bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0.015)_100%)]
                          border border-white/5 ring-1 ring-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.45)]
                          transition-all duration-300 will-change-transform hover:-translate-y-1.5
@@ -141,7 +156,7 @@ export default function StudentExplore({ onBack, onGetStarted }: StudentExploreP
                   ))}
                 </ul>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
         <motion.div
@@ -193,6 +208,7 @@ export default function StudentExplore({ onBack, onGetStarted }: StudentExploreP
           </div>
         </div>
       </div>
+      <ExploreFeatureModal open={modalOpen} onClose={() => setModalOpen(false)} feature={selected} />
     </div>
   );
 }

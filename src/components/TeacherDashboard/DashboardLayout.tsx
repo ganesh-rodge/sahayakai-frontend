@@ -23,7 +23,7 @@ export default function DashboardLayout({ children, onLogout, userName = 'Teache
     { id: 'visual-aid', label: 'Visual Aid' },
     { id: 'lesson-planner', label: 'Planner' },
     { id: 'game-generator', label: 'Games' },
-    { id: 'audio-assessment', label: 'Audio' },
+  // Audio Assessment removed
   ];
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface AudioAssessmentProps {
   onBack: () => void;
@@ -38,8 +38,35 @@ export default function AudioAssessment({ onBack, onSave }: AudioAssessmentProps
   const [recordingTime, setRecordingTime] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const timerRef = useRef<number | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [micError, setMicError] = useState('');
 
-  const handleStartRecording = () => {
+  // Preload from 'Open' action
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('teacherOpenWork');
+      if (!raw) return;
+      const item = JSON.parse(raw);
+      if (item?.toolId !== 'audio-assessment') return;
+      const c = item.content;
+      if (typeof c === 'string') {
+        setAssessment(c);
+      } else if (c && typeof c === 'object') {
+        if (c.language) setLanguage(c.language);
+        if (c.gradeLevel) setGradeLevel(c.gradeLevel);
+        if (c.difficulty) setDifficulty(c.difficulty);
+        if (typeof c.recordingTime === 'number') setRecordingTime(c.recordingTime);
+      }
+    } catch {}
+    finally {
+      localStorage.removeItem('teacherOpenWork');
+    }
+  }, []);
+
+  const handleStartRecording = async () => {
     if (!language) {
       setErrors({ language: 'Please select a language' });
       return;
@@ -54,24 +81,62 @@ export default function AudioAssessment({ onBack, onSave }: AudioAssessmentProps
     }
 
     setErrors({});
-    setIsRecording(true);
+    setMicError('');
     setRecordingTime(0);
 
-    timerRef.current = setInterval(() => {
-      setRecordingTime(prev => prev + 1);
-    }, 1000);
+    try {
+      // Request microphone
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      // Reset previous audio URL if any
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+        setAudioUrl(null);
+      }
+
+      chunksRef.current = [];
+      const mr = new MediaRecorder(stream);
+      mediaRecorderRef.current = mr;
+      mr.ondataavailable = (e: BlobEvent) => {
+        if (e.data && e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+      mr.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        setHasRecording(true);
+        // stop mic tracks
+        streamRef.current?.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+      };
+
+      mr.start();
+      setIsRecording(true);
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (err: any) {
+      console.error('Microphone error', err);
+      setMicError('Microphone access failed. Please allow mic permission and try again.');
+    }
   };
 
   const handleStopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
     setIsRecording(false);
-    setHasRecording(true);
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
   };
 
   const handlePlayRecording = () => {
-    console.log('Playing recording...');
+    if (!audioUrl) return;
+    const audio = new Audio(audioUrl);
+    audio.play();
   };
 
   const handleReset = () => {
@@ -81,6 +146,15 @@ export default function AudioAssessment({ onBack, onSave }: AudioAssessmentProps
     setAssessment('');
     if (timerRef.current) {
       clearInterval(timerRef.current);
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
     }
   };
 
@@ -441,6 +515,7 @@ This assessment was conducted using AI-powered speech analysis technology. Resul
                 </button>
               )}
               {errors.recording && <p className="text-red-500 text-xs mt-2">{errors.recording}</p>}
+              {micError && <p className="text-red-500 text-xs mt-2">{micError}</p>}
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ContentGeneratorProps {
   onBack: () => void;
@@ -28,6 +28,29 @@ export default function ContentGenerator({ onBack, onSave }: ContentGeneratorPro
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Preload from 'Open' action
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('teacherOpenWork');
+      if (!raw) return;
+      const item = JSON.parse(raw);
+      if (item?.toolId !== 'content-generator') return;
+      const c = item.content;
+      if (typeof c === 'string') {
+        setGeneratedContent(c);
+      } else if (c && typeof c === 'object') {
+        if (c.language) setLanguage(c.language);
+        if (c.contentType) setContentType(c.contentType);
+        if (c.gradeLevel) setGradeLevel(c.gradeLevel);
+        if (c.topic) setTopic(c.topic);
+      }
+    } catch {}
+    finally {
+      // Clear the handoff so it doesn't reapply
+      localStorage.removeItem('teacherOpenWork');
+    }
+  }, []);
 
   const handleGenerate = async () => {
     const newErrors: Record<string, string> = {};

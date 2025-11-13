@@ -216,7 +216,7 @@ export default function ForgotPasswordPage({ role: _role, onBack }: Props) {
                     </button>
                   </div>
                   <div
-                    className="flex items-center gap-2"
+                    className="grid grid-cols-6 gap-2 sm:gap-3"
                     onPaste={handleOtpPaste}
                   >
                     {Array.from({ length: 6 }).map((_, i) => (
@@ -231,7 +231,7 @@ export default function ForgotPasswordPage({ role: _role, onBack }: Props) {
                         value={otpDigits[i]}
                         onChange={(e) => handleOtpDigitChange(i, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                        className="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg rounded-md bg-dark-input text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="w-full h-10 sm:h-12 text-center text-lg rounded-md bg-dark-input text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
                         placeholder=""
                         maxLength={1}
                         required

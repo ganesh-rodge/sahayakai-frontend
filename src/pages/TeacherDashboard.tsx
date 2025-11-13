@@ -1,18 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ContentGenerator from './TeacherDashboard/ContentGenerator';
 import MaterialBase from './TeacherDashboard/MaterialBase';
 import KnowledgeBase from './TeacherDashboard/KnowledgeBase';
 import VisualAidGenerator from './TeacherDashboard/VisualAidGenerator';
 import LessonPlanner from './TeacherDashboard/LessonPlanner';
 import GameGenerator from './TeacherDashboard/GameGenerator';
-import AudioAssessment from './TeacherDashboard/AudioAssessment';
-import SavedWorkList from './TeacherDashboard/SavedWork.tsx';
+import SavedWorkList, { type SavedItem } from './TeacherDashboard/SavedWork.tsx';
+
+import Profile from './TeacherDashboard/Profile';
 
 export default function TeacherDashboard() {
-  const [activeView, setActiveView] = useState<'welcome' | 'content-generator' | 'material-base' | 'knowledge-base' | 'visual-aid' | 'lesson-planner' | 'game-generator' | 'audio-assessment' | 'saved-work'>('welcome');
+  const [activeView, setActiveView] = useState<'welcome' | 'content-generator' | 'material-base' | 'knowledge-base' | 'visual-aid' | 'lesson-planner' | 'game-generator' | 'saved-work' | 'profile'>('welcome');
   const [institutionType, setInstitutionType] = useState<'school' | 'college'>('school');
 
-  const teacherName = 'Dr. Smith';
+  const getStoredName = () => {
+    try {
+      const raw = localStorage.getItem('teacherProfile');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p?.name) return String(p.name);
+      }
+    } catch {}
+    return 'Dr. Smith';
+  };
+  const [teacherName, setTeacherName] = useState<string>(getStoredName());
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 768) setIsMenuOpen(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -76,15 +95,7 @@ export default function TeacherDashboard() {
       forSchool: true,
       forCollege: false
     },
-    {
-      id: 'audio-assessment',
-      icon: '🎤',
-      title: 'Audio Reading Assessment',
-      description: 'Evaluate student reading skills using speech-to-text',
-      color: 'from-indigo-500 to-purple-500',
-      forSchool: true,
-      forCollege: false
-    }
+    // Audio Assessment removed
   ];
 
   const filteredTools = tools.filter(tool =>
@@ -115,7 +126,7 @@ export default function TeacherDashboard() {
     <div className="min-h-screen bg-dark-primary">
       <div className="sticky top-0 z-50 bg-dark-secondary/95 backdrop-blur-xl border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => (window.location.href = '/')}
@@ -126,7 +137,8 @@ export default function TeacherDashboard() {
               </button>
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* Desktop controls */}
+            <div className="hidden md:flex items-center gap-4">
               <div className="flex gap-2 bg-dark-tertiary rounded-lg p-1">
                 <button
                   onClick={() => setInstitutionType('school')}
@@ -158,9 +170,69 @@ export default function TeacherDashboard() {
                 💾 Saved Work
               </button>
 
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent-light flex items-center justify-center text-dark-primary font-bold">
+              <button
+                onClick={() => setActiveView('profile')}
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent-light flex items-center justify-center text-dark-primary font-bold hover:brightness-110"
+                title="Profile"
+              >
                 {teacherName.charAt(0)}
-              </div>
+              </button>
+            </div>
+
+            {/* Mobile hamburger */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsMenuOpen((v) => !v)}
+                aria-label="Open menu"
+                className="p-2 rounded-md bg-dark-tertiary text-gray-200 border border-gray-700"
+              >
+                {/* hamburger icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                  <path fillRule="evenodd" d="M3.75 6.75A.75.75 0 014.5 6h15a.75.75 0 010 1.5h-15a.75.75 0 01-.75-.75zm0 5.25a.75.75 0 01.75-.75h15a.75.75 0 010 1.5h-15a.75.75 0 01-.75-.75zm.75 4.5a.75.75 0 000 1.5h15a.75.75 0 000-1.5h-15z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {isMenuOpen && (
+                <div className="absolute right-4 top-16 w-64 bg-dark-secondary border border-gray-800 rounded-xl shadow-xl overflow-hidden z-50">
+                  <div className="p-3 border-b border-gray-800 flex items-center justify-between">
+                    <div className="font-semibold">Menu</div>
+                    <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white">✕</button>
+                  </div>
+                  <div className="p-3 space-y-3">
+                    <div>
+                      <div className="text-xs uppercase text-gray-500 mb-2">Institution</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => { setInstitutionType('school'); setIsMenuOpen(false); }}
+                          className={`px-3 py-2 rounded-md text-sm font-semibold ${institutionType === 'school' ? 'bg-accent text-dark-primary' : 'bg-dark-tertiary border border-gray-700 text-gray-300'}`}
+                        >
+                          School
+                        </button>
+                        <button
+                          onClick={() => { setInstitutionType('college'); setIsMenuOpen(false); }}
+                          className={`px-3 py-2 rounded-md text-sm font-semibold ${institutionType === 'college' ? 'bg-accent text-dark-primary' : 'bg-dark-tertiary border border-gray-700 text-gray-300'}`}
+                        >
+                          College
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => { setActiveView('saved-work'); setIsMenuOpen(false); }}
+                      className="w-full px-3 py-2 rounded-md bg-dark-tertiary text-sm text-gray-200 hover:bg-dark-tertiary/80 transition-colors flex items-center gap-2"
+                    >
+                      <span>💾</span> <span>Saved Work</span>
+                    </button>
+
+                    <button
+                      onClick={() => { setActiveView('profile'); setIsMenuOpen(false); }}
+                      className="w-full px-3 py-2 rounded-md bg-gradient-to-br from-accent to-accent-light text-sm text-dark-primary font-semibold"
+                    >
+                      Profile ({teacherName})
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -217,9 +289,7 @@ export default function TeacherDashboard() {
           <GameGenerator onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'game-generator', title: payload?.title || 'Game', content: payload?.content || payload })} />
         )}
 
-        {activeView === 'audio-assessment' && (
-          <AudioAssessment onBack={() => setActiveView('welcome')} onSave={(payload?: any) => saveWorkToStorage({ toolId: 'audio-assessment', title: payload?.title || 'Audio Assessment', content: payload?.content || payload })} />
-        )}
+        {/** Audio Assessment removed */}
 
         {activeView === 'saved-work' && (
           // lazy import-like render of saved work list component
@@ -232,8 +302,25 @@ export default function TeacherDashboard() {
               <p className="text-gray-400 mt-2">Your saved teaching artifacts</p>
             </div>
 
-            <SavedWorkList />
+            <SavedWorkList onOpen={(item: SavedItem) => {
+              if (item.toolId === 'audio-assessment') {
+                alert('Audio Assessment tool has been removed. You can still view and copy your saved report here.');
+                return;
+              }
+              // Stash selected work so the tool can preload it, then navigate to the tool
+              try {
+                localStorage.setItem('teacherOpenWork', JSON.stringify(item));
+              } catch {}
+              setActiveView(item.toolId as any);
+            }} />
           </div>
+        )}
+
+        {activeView === 'profile' && (
+          <Profile
+            onBack={() => setActiveView('welcome')}
+            onSaved={() => setTeacherName(getStoredName())}
+          />
         )}
       </div>
     </div>

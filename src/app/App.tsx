@@ -75,10 +75,16 @@ function App() {
         onExploreStudent={() => navigate('/student-explore')}
         onExploreTeacher={() => navigate('/teacher-explore')}
         onGetStarted={() => navigate('/signup')}
+        onExplore={() => {
+          const el = document.getElementById('resources');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }}
       />
       <About />
       <Services />
-      <Resources onNavigate={(page) => navigate(`/${page}`)} />
+  <Resources onNavigate={(page) => navigate(`/${page}`)} />
       <Features />
       <Footer onNavigate={(page) => navigate(`/${page}`)} />
     </div>

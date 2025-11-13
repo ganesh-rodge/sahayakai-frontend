@@ -8,7 +8,6 @@ import KnowledgeBase from '../pages/TeacherDashboard/KnowledgeBase';
 import VisualAidGenerator from '../pages/TeacherDashboard/VisualAidGenerator';
 import LessonPlanner from '../pages/TeacherDashboard/LessonPlanner';
 import GameGenerator from '../pages/TeacherDashboard/GameGenerator';
-import AudioAssessment from '../pages/TeacherDashboard/AudioAssessment';
 
 export default function TeacherRoutes() {
   const navigate = useNavigate();
@@ -39,7 +38,7 @@ export default function TeacherRoutes() {
         <Route path="visual-aid" element={<VisualAidGenerator onBack={() => navigate('/teacher/dashboard')} />} />
         <Route path="lesson-planner" element={<LessonPlanner onBack={() => navigate('/teacher/dashboard')} />} />
         <Route path="game-generator" element={<GameGenerator onBack={() => navigate('/teacher/dashboard')} />} />
-        <Route path="audio-assessment" element={<AudioAssessment onBack={() => navigate('/teacher/dashboard')} />} />
+  {/** Audio Assessment removed */}
 
         {/* optional teacher routes */}
         <Route path="settings" element={<div className="p-6 text-white">Settings coming soon</div>} />

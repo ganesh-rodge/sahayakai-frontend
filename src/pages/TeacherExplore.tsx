@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import ExploreFeatureModal, { type ExploreFeatureData } from '../components/ExploreFeatureModal';
 
 interface TeacherExploreProps {
   onBack: () => void;
@@ -6,7 +8,8 @@ interface TeacherExploreProps {
 }
 
 export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreProps) {
-  // Simplified view: details are always visible; no toggles or demo modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selected, setSelected] = useState<ExploreFeatureData | null>(null);
 
   const features = [
     {
@@ -81,18 +84,7 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
       ],
       stats: { created: '6', unit: 'games' }
     },
-    {
-      icon: '🎤',
-      title: 'Audio Reading Assessment',
-      description: 'Evaluate student reading skills using speech-to-text.',
-      capabilities: [
-        'Record student reading sessions',
-        'Analyze pronunciation and fluency',
-        'Provide detailed feedback',
-        'Track improvement over time'
-      ],
-      stats: { created: '12', unit: 'assessments' }
-    },
+    // Audio Reading Assessment removed
     {
       icon: '📊',
       title: 'Analytics Dashboard',
@@ -134,11 +126,22 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mb-20">
           {features.map((feature, index) => (
-            <motion.article
+            <motion.button
               key={feature.title}
-              className="group relative overflow-hidden rounded-2xl p-6 flex flex-col h-full
+              onClick={() => {
+                setSelected({
+                  icon: feature.icon,
+                  title: feature.title,
+                  description: feature.description,
+                  items: feature.capabilities,
+                  ctaLabel: 'Get Started',
+                  onCta: onGetStarted,
+                });
+                setModalOpen(true);
+              }}
+              className="text-left group relative overflow-hidden rounded-2xl p-6 flex flex-col h-full
                          bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0.015)_100%)]
                          border border-white/5 ring-1 ring-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.45)]
                          transition-all duration-300 will-change-transform hover:-translate-y-1.5
@@ -161,19 +164,7 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
                 <p className="text-gray-400/90 text-sm leading-relaxed text-center">{feature.description}</p>
               </header>
 
-              {/* Details always visible */}
-              <div className="mt-auto pt-5">
-                <h4 className="text-[13px] font-semibold mb-3 text-accent uppercase tracking-wide">Key Capabilities</h4>
-                <ul className="space-y-2">
-                  {feature.capabilities.map((capability, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-gray-300/95 text-sm">
-                      <span className="text-accent mt-1">✓</span>
-                      <span>{capability}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.article>
+            </motion.button>
           ))}
         </div>
 
@@ -235,7 +226,8 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
           </div>
         </div>
       </div>
-      {/* Demo modal removed as per requirement */}
+      <ExploreFeatureModal open={modalOpen} onClose={() => setModalOpen(false)} feature={selected} />
+      {/* Demo modal replaced by structured feature modal */}
     </div>
   );
 }

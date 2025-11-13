@@ -8,7 +8,7 @@ export interface SavedItem {
   savedAt: string;
 }
 
-export default function SavedWorkList() {
+export default function SavedWorkList({ onOpen }: { onOpen?: (item: SavedItem) => void }) {
   const [items, setItems] = useState<SavedItem[]>([]);
   const [selected, setSelected] = useState<SavedItem | null>(null);
 
@@ -88,6 +88,25 @@ export default function SavedWorkList() {
                   <div className="text-sm text-gray-500">{selected.toolId} · Saved {new Date(selected.savedAt).toLocaleString()}</div>
                 </div>
                 <div className="flex gap-2">
+                  {onOpen && (
+                    selected.toolId === 'audio-assessment' ? (
+                      <button
+                        disabled
+                        className="text-sm text-gray-500 cursor-not-allowed"
+                        title="Audio Assessment tool has been removed"
+                      >
+                        Open
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onOpen(selected)}
+                        className="text-sm text-accent hover:underline"
+                        title="Open in original tool"
+                      >
+                        Open
+                      </button>
+                    )
+                  )}
                   <button onClick={() => navigator.clipboard.writeText(JSON.stringify(selected.content, null, 2))} className="text-sm text-accent hover:underline">Copy</button>
                   <button onClick={() => { handleDelete(selected.id); }} className="text-sm text-red-400 hover:underline">Delete</button>
                 </div>

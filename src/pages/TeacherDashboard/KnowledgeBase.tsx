@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface KnowledgeBaseProps {
   onBack: () => void;
@@ -27,6 +27,26 @@ export default function KnowledgeBase({ onBack, onSave }: KnowledgeBaseProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAnswer, setGeneratedAnswer] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Preload from 'Open' action
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('teacherOpenWork');
+      if (!raw) return;
+      const item = JSON.parse(raw);
+      if (item?.toolId !== 'knowledge-base') return;
+      const c = item.content;
+      if (typeof c === 'string') {
+        setGeneratedAnswer(c);
+      } else if (c && typeof c === 'object') {
+        if (c.language) setLanguage(c.language);
+        if (c.question) setQuestion(c.question);
+      }
+    } catch {}
+    finally {
+      localStorage.removeItem('teacherOpenWork');
+    }
+  }, []);
 
   const handleQuestionSubmit = async () => {
     const newErrors: Record<string, string> = {};
