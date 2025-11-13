@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getJSON } from '../../utils/api';
+import { getJSON, deleteJSON } from '../../utils/api';
 
 export interface SavedItem {
   id: string;
@@ -19,13 +19,14 @@ export default function SavedWorkList({ onOpen }: { onOpen?: (item: SavedItem) =
     const normalize = (arr: any[], toolIdHint?: string): SavedItem[] => {
       return (arr || []).map((it: any) => {
         const id = it?.id || it?._id || Math.random().toString(36).slice(2);
-        const toolId = it?.toolId || toolIdHint || (it?.explanationText ? 'knowledge-base' : 'content-generator');
+        const toolId = it?.toolId || toolIdHint || (it?.explanationText ? 'knowledge-base' : (it?.stepsText ? 'visual-aid' : 'content-generator'));
         const savedAt = it?.savedAt || it?.createdAt || it?.updatedAt || new Date().toISOString();
         const titleFromApi = it?.title
           || (toolId === 'knowledge-base' && it?.question ? `Answer - ${it.question}` : undefined)
           || (toolId === 'content-generator' && it?.topic ? `${it?.contentType || 'Content'} - ${it.topic}` : undefined)
+          || (toolId === 'visual-aid' && (it?.visualType || it?.description) ? `${it?.visualType || 'Visual Aid'}` : undefined)
           || 'Saved Work';
-        const content = it?.contentText || it?.explanationText || it?.generatedText || it?.content || it;
+        const content = it?.contentText || it?.explanationText || it?.stepsText || it?.generatedText || it?.content || it;
         return { id, toolId, title: titleFromApi, content, savedAt } as SavedItem;
       });
     };
@@ -33,9 +34,13 @@ export default function SavedWorkList({ onOpen }: { onOpen?: (item: SavedItem) =
     const load = async () => {
       // Try backend first: both content and knowledge saved lists; fall back to local storage
       try {
-        const [contentRes, knowledgeRes] = await Promise.allSettled([
+        const [contentRes, knowledgeRes, visualRes, lessonRes, gameRes, materialRes] = await Promise.allSettled([
           getJSON('/teacher/content/saved'),
           getJSON('/teacher/knowledge/saved'),
+          getJSON('/teacher/visual/saved'),
+          getJSON('/teacher/lesson/saved'),
+          getJSON('/teacher/game/saved'),
+          getJSON('/teacher/material/saved'),
         ]);
 
         let merged: SavedItem[] = [];
@@ -50,6 +55,55 @@ export default function SavedWorkList({ onOpen }: { onOpen?: (item: SavedItem) =
           const data = knowledgeRes.value;
           const arr = Array.isArray(data?.data) ? data.data : (data?.data?.items || []);
           merged = merged.concat(normalize(arr, 'knowledge-base'));
+        }
+
+        if (visualRes.status === 'fulfilled') {
+          const data = visualRes.value;
+          const arr = Array.isArray(data?.data) ? data.data : (data?.data?.items || []);
+          merged = merged.concat(normalize(arr, 'visual-aid'));
+        }
+
+        if (lessonRes.status === 'fulfilled') {
+          const data = lessonRes.value;
+          const arr = Array.isArray(data?.data) ? data.data : (data?.data?.items || []);
+          // Enhance normalize mapping for lesson items
+          const mapped = (arr || []).map((it: any) => {
+            const id = it?.id || it?._id || Math.random().toString(36).slice(2);
+            const savedAt = it?.savedAt || it?.createdAt || it?.updatedAt || new Date().toISOString();
+            const toolId: SavedItem['toolId'] = 'lesson-planner';
+            const title = it?.title || `${it?.subject || 'Lesson'} - ${it?.topic || ''}`.trim() || 'Lesson Plan';
+            const content = it?.planText || it?.generatedText || it?.content || it;
+            return { id, toolId, title, content, savedAt } as SavedItem;
+          });
+          merged = merged.concat(mapped);
+        }
+
+        if (gameRes.status === 'fulfilled') {
+          const data = gameRes.value;
+          const arr = Array.isArray(data?.data) ? data.data : (data?.data?.items || []);
+          const mapped = (arr || []).map((it: any) => {
+            const id = it?.id || it?._id || Math.random().toString(36).slice(2);
+            const savedAt = it?.savedAt || it?.createdAt || it?.updatedAt || new Date().toISOString();
+            const toolId: SavedItem['toolId'] = 'game-generator';
+            const title = it?.title || it?.game?.title || `${(it?.gameType || 'Game')}${it?.topic ? ` - ${it.topic}` : ''}`;
+            const content = it?.game?.description || it?.gameText || it?.generatedText || it?.content || it;
+            return { id, toolId, title, content, savedAt } as SavedItem;
+          });
+          merged = merged.concat(mapped);
+        }
+
+        if (materialRes.status === 'fulfilled') {
+          const data = materialRes.value;
+          const arr = Array.isArray(data?.data) ? data.data : (data?.data?.items || []);
+          const mapped = (arr || []).map((it: any) => {
+            const id = it?.id || it?._id || Math.random().toString(36).slice(2);
+            const savedAt = it?.savedAt || it?.createdAt || it?.updatedAt || new Date().toISOString();
+            const toolId: SavedItem['toolId'] = 'material-base';
+            const title = it?.title || `Worksheet - Grade ${it?.gradeLevel || 'N/A'}`;
+            const content = it?.generatedText || it?.content || it;
+            return { id, toolId, title, content, savedAt } as SavedItem;
+          });
+          merged = merged.concat(mapped);
         }
 
         if (merged.length > 0) {
@@ -78,16 +132,53 @@ export default function SavedWorkList({ onOpen }: { onOpen?: (item: SavedItem) =
 
   // items are loaded in useEffect; mutations update state directly
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    // Best-effort backend delete by tool type
+    const toolToPath: Record<string, string> = {
+      'content-generator': '/teacher/content',
+      'knowledge-base': '/teacher/knowledge',
+      'visual-aid': '/teacher/visual',
+      'lesson-planner': '/teacher/lesson',
+      'game-generator': '/teacher/game',
+      'material-base': '/teacher/material',
+    };
+    try {
+      const base = item ? toolToPath[item.toolId] : undefined;
+      if (base) {
+        await deleteJSON(`${base}/${id}`);
+      }
+    } catch (e) {
+      // Ignore errors to keep UI responsive; local fallback still updates
+      console.warn('Backend delete failed; removing locally', e);
+    }
+
     const filtered = items.filter(i => i.id !== id);
-    // Update local fallback store; backend deletion not implemented here
+    // Update local fallback store as well
     localStorage.setItem('teacherSavedWorks', JSON.stringify(filtered));
     setItems(filtered);
     if (selected?.id === id) setSelected(null);
   };
 
-  const clearAll = () => {
-    // Only clears local fallback; backend bulk delete not implemented
+  const clearAll = async () => {
+    // Attempt backend deletes for each item in parallel; ignore failures
+    const toolToPath: Record<string, string> = {
+      'content-generator': '/teacher/content',
+      'knowledge-base': '/teacher/knowledge',
+      'visual-aid': '/teacher/visual',
+      'lesson-planner': '/teacher/lesson',
+      'game-generator': '/teacher/game',
+      'material-base': '/teacher/material',
+    };
+    try {
+      await Promise.allSettled(items.map(i => {
+        const base = toolToPath[i.toolId];
+        return base ? deleteJSON(`${base}/${i.id}`) : Promise.resolve();
+      }));
+    } catch (e) {
+      // ignore
+    }
+
     localStorage.removeItem('teacherSavedWorks');
     setItems([]);
     setSelected(null);

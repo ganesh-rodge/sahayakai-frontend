@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { postForm, postJSON } from '../../utils/api';
+import { stripStars } from '../../utils/sanitize';
 
 interface MaterialBaseProps {
   onBack: () => void;
@@ -15,6 +17,10 @@ export default function MaterialBase({ onBack, onSave }: MaterialBaseProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedWorksheet, setGeneratedWorksheet] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [language, setLanguage] = useState('English');
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<'idle' | 'generating' | 'saving' | 'done'>('idle');
+  const [uploadedRemoteUrl, setUploadedRemoteUrl] = useState<string | null>(null);
 
   // Preload from 'Open' action
   useEffect(() => {
@@ -64,93 +70,34 @@ export default function MaterialBase({ onBack, onSave }: MaterialBaseProps) {
     }
 
     setIsGenerating(true);
+    setApiError(null);
+    setApiStatus('generating');
     setErrors({});
 
-    await new Promise(resolve => setTimeout(resolve, 2500));
+    try {
+      const form = new FormData();
+      form.append('language', language.toLowerCase());
+      // API expects 'grade' based on attachment; use selected grade level
+      form.append('grade', gradeLevel);
+      form.append('photo', uploadedFile as File);
 
-    const sampleWorksheet = `# Worksheet - Grade ${gradeLevel}
-## Based on Uploaded Material
-
----
-
-### Section A: Understanding (10 marks)
-
-1. Read the content from the textbook page carefully and answer the following:
-
-   a) What is the main topic discussed in this page?
-   __________________________________________________________________
-
-   b) List three key points you learned:
-   - _________________________________________________________________
-   - _________________________________________________________________
-   - _________________________________________________________________
-
-2. Define the following terms in your own words:
-
-   a) _________________________________________________________________
-
-   b) _________________________________________________________________
-
----
-
-### Section B: Application (10 marks)
-
-3. Based on what you read, explain how this concept applies to real life:
-
-   __________________________________________________________________
-   __________________________________________________________________
-   __________________________________________________________________
-   __________________________________________________________________
-
-4. Draw a diagram or flowchart to represent the concept:
-
-   [Space for diagram]
-
----
-
-### Section C: Critical Thinking (10 marks)
-
-5. What questions do you still have about this topic?
-
-   __________________________________________________________________
-   __________________________________________________________________
-
-6. How would you explain this concept to a friend? Write a short paragraph:
-
-   __________________________________________________________________
-   __________________________________________________________________
-   __________________________________________________________________
-   __________________________________________________________________
-
----
-
-### Section D: Practice Problems (10 marks)
-
-7. Solve the following based on the textbook content:
-
-   Problem 1:
-   __________________________________________________________________
-
-   Problem 2:
-   __________________________________________________________________
-
-   Problem 3:
-   __________________________________________________________________
-
----
-
-**Total Marks: 40**
-
-**Teacher's Notes:**
-This worksheet has been automatically generated to match Grade ${gradeLevel} comprehension level.
-Adjust difficulty as needed for individual students.
-
----
-
-Generated with Sahayak-AI Material Base`;
-
-    setGeneratedWorksheet(sampleWorksheet);
-    setIsGenerating(false);
+      const data: any = await postForm('/teacher/material/generate', form);
+      const payload = data?.data || data;
+      const text = payload?.generatedText || payload?.text || '';
+      const imageUrl = payload?.originalImageUrl || payload?.imageUrl || payload?.photoUrl || null;
+      if (imageUrl) setUploadedRemoteUrl(imageUrl);
+      if (!text) throw new Error('No generated text returned');
+      setGeneratedWorksheet(stripStars(text));
+    } catch (e: any) {
+      if (e?.status === 401) {
+        setApiError('Unauthorized. Please log in to generate.');
+      } else {
+        setApiError(e?.message || 'Failed to generate worksheet');
+      }
+    } finally {
+      setIsGenerating(false);
+      setApiStatus('idle');
+    }
   };
 
   const handleReset = () => {
@@ -159,6 +106,8 @@ Generated with Sahayak-AI Material Base`;
     setPreviewUrl('');
     setGeneratedWorksheet('');
     setErrors({});
+    setUploadedRemoteUrl(null);
+    setApiError(null);
   };
 
   return (
@@ -178,15 +127,37 @@ Generated with Sahayak-AI Material Base`;
         <div className="flex items-center gap-3">
           {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
           <button
-            onClick={() => {
-              const payload = generatedWorksheet ? { title: `Worksheet - Grade ${gradeLevel || 'N/A'}`, content: generatedWorksheet } : { title: `Worksheet - Grade ${gradeLevel || 'N/A'}`, content: { gradeLevel } };
-              onSave?.(payload);
-              setSavedMsg('Saved');
-              setTimeout(() => setSavedMsg(''), 1800);
+            onClick={async () => {
+              try {
+                setApiStatus('saving');
+                setApiError(null);
+                await postJSON('/teacher/material/', {
+                  gradeLevel: gradeLevel || null,
+                  originalImageUrl: uploadedRemoteUrl,
+                  generatedText: generatedWorksheet,
+                  language,
+                });
+                setSavedMsg('Saved');
+                setTimeout(() => setSavedMsg(''), 1800);
+                // Also forward to optional onSave for local fallback or navigation
+                const payload = generatedWorksheet
+                  ? { title: `Worksheet - Grade ${gradeLevel || 'N/A'}`, content: generatedWorksheet, toolId: 'material-base' }
+                  : { title: `Worksheet - Grade ${gradeLevel || 'N/A'}`, content: { gradeLevel }, toolId: 'material-base' };
+                onSave?.(payload);
+              } catch (e: any) {
+                if (e?.status === 401) {
+                  setApiError('Unauthorized. Please log in to save.');
+                } else {
+                  setApiError(e?.message || 'Failed to save');
+                }
+              } finally {
+                setApiStatus('idle');
+              }
             }}
-            className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm"
+            disabled={apiStatus === 'saving'}
+            className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm disabled:opacity-60"
           >
-            Save Work
+            {apiStatus === 'saving' ? 'Saving...' : 'Save Work'}
           </button>
         </div>
       </div>
@@ -194,6 +165,12 @@ Generated with Sahayak-AI Material Base`;
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-dark-secondary border border-gray-800 rounded-xl p-8">
           <h3 className="text-xl font-bold mb-6">Upload & Configure</h3>
+
+          {apiError && (
+            <div className="mb-4 text-sm text-red-400">{apiError} {apiError.includes('Unauthorized') && (
+              <a href="/login-teacher" className="underline ml-1">Login</a>
+            )}</div>
+          )}
 
           <div className="space-y-6">
             <div>
@@ -254,6 +231,19 @@ Generated with Sahayak-AI Material Base`;
                 ))}
               </div>
               {errors.gradeLevel && <p className="text-red-500 text-xs mt-1">{errors.gradeLevel}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-3">Language</label>
+              <select
+                value={language}
+                onChange={e => setLanguage(e.target.value)}
+                className="w-full bg-dark-tertiary border border-gray-700 rounded-lg p-3 text-gray-200"
+              >
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Marathi</option>
+              </select>
             </div>
 
             <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">

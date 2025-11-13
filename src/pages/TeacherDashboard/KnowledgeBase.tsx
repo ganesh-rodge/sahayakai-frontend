@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { postJSON } from '../../utils/api';
+import { stripStars } from '../../utils/sanitize';
 
 interface KnowledgeBaseProps {
   onBack: () => void;
@@ -74,7 +75,7 @@ export default function KnowledgeBase({ onBack, onSave }: KnowledgeBaseProps) {
         question,
       });
       const text = resp?.data?.generatedText || '';
-      setGeneratedAnswer(text);
+      setGeneratedAnswer(stripStars(text));
     } catch (e: any) {
       const msg = e?.message || 'Failed to generate answer';
       setApiError(msg);

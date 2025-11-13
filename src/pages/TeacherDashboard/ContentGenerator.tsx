@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { postJSON } from '../../utils/api';
+import { stripStars } from '../../utils/sanitize';
 
 interface ContentGeneratorProps {
   onBack: () => void;
@@ -80,7 +81,7 @@ export default function ContentGenerator({ onBack, onSave }: ContentGeneratorPro
       });
 
       const text = resp?.data?.generatedText || '';
-      setGeneratedContent(text);
+      setGeneratedContent(stripStars(text));
     } catch (e: any) {
       const msg = e?.message || 'Failed to generate content';
       setApiError(msg);
