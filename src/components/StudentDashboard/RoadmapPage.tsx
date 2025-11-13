@@ -50,6 +50,15 @@ export default function RoadmapPage({ learningGoal, weeks, onStartLesson, onCrea
     }
   }, [viewMode, selectedWeekNumber]);
 
+  // Debug: log weeks prop whenever it changes so dev can inspect mapped roadmap
+  useEffect(() => {
+    try {
+      console.log('RoadmapPage - weeks prop:', weeks);
+    } catch (e) {
+      // silent
+    }
+  }, [weeks]);
+
   // Show empty state if no roadmap
   if (!hasRoadmap) {
     return (

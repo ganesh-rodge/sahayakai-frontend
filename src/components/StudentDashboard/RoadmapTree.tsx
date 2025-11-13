@@ -37,6 +37,13 @@ export default function RoadmapTree({ weeks, onWeekClick, onShowWeekInList }: Ro
   const [isPanning, setIsPanning] = useState(false);
   const panOrigin = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
 
+  // Debug: log incoming weeks for inspection
+  useEffect(() => {
+    try {
+      console.log('RoadmapTree - weeks prop:', weeks);
+    } catch (e) {}
+  }, [weeks]);
+
   // Observe container size for responsive layout
   useEffect(() => {
     const el = containerRef.current;

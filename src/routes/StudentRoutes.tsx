@@ -32,6 +32,7 @@ export default function StudentRoutes() {
   const location = useLocation();
 
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
 
   const [userData, setUserData] = useState({
     userName: 'Student',
@@ -184,9 +185,10 @@ export default function StudentRoutes() {
   };
 
   const handleOnboardingComplete = async (data: { learningGoal: string; experience: string[]; timeCommitment: string; skillLevel: string; preferredTopics: string[]; weeksNeeded?: number }) => {
+    console.log('Onboarding flow - incoming data:', data);
     // Prepare payload as required by backend
     const payload = {
-      field: data.field || data.learningGoal || 'General',
+      field: (data as any).field || data.learningGoal || 'General',
       goal: data.learningGoal,
       knownLanguages: Array.isArray(data.experience) ? data.experience.join(',') : String(data.experience || ''),
       skillLevel: data.skillLevel,
@@ -195,21 +197,32 @@ export default function StudentRoutes() {
       weekCommitment: String(typeof data.weeksNeeded !== 'undefined' ? data.weeksNeeded : '')
     };
 
+    console.log('Onboarding payload to send:', payload);
+
     try {
       // Save onboarding to backend
       const saved = await postJSON('/onboarding/', payload);
+      console.log('Saved onboarding response:', saved);
+
       // optional: get onboarding (not strictly needed because server reads it), but keep for validation
       let onboardingResp = null;
       try {
         onboardingResp = await getJSON('/onboarding/me');
+        console.log('Fetched onboarding/me:', onboardingResp);
       } catch (e) {
         // ignore - proceed to generate roadmap
+        console.warn('Could not fetch onboarding/me (continuing):', e);
       }
 
       // Request roadmap generation (server will read onboarding from DB)
+      console.log('Requesting roadmap generation from server...');
+      setIsGeneratingRoadmap(true);
       const gen = await postJSON('/roadmap/generate', {});
+      console.log('Roadmap generation raw response:', gen);
+
       // Expected response: { data: { roadmap: { totalWeeks, weeks: [...] } } }
       const roadmap = gen?.data?.roadmap || gen?.roadmap || null;
+      console.log('Normalized roadmap object found:', roadmap);
       if (!roadmap) {
         toast.error('Roadmap generation returned empty result');
         return;
@@ -221,8 +234,8 @@ export default function StudentRoutes() {
         const lessons = (chapters || []).map((c: any, idx: number) => ({
           id: `w${w.weekNumber}l${idx + 1}`,
           title: c.title || String(c || ''),
-          description: '',
-          duration: '',
+          description: c.description || '',
+          duration: c.estimatedMinutes ? `${Math.round((c.estimatedMinutes || 0) / 60)} hrs` : '',
           completed: !!c.isDone
         }));
         const lessonsCompleted = lessons.filter(l => l.completed).length;
@@ -238,6 +251,8 @@ export default function StudentRoutes() {
         };
       });
 
+      console.log('Mapped weeks (frontend format):', mappedWeeks);
+
       setWeeksData(mappedWeeks);
       try { if (mappedWeeks.length > 0) localStorage.setItem('studentRoadmap', JSON.stringify(mappedWeeks)); } catch {}
 
@@ -246,8 +261,11 @@ export default function StudentRoutes() {
       setShowOnboarding(false);
       navigate('/student/roadmap');
     } catch (err: any) {
+      console.error('Error in onboarding => generate flow:', err);
       const msg = String(err?.message || err || 'Failed to save onboarding or generate roadmap');
       toast.error(msg);
+    } finally {
+      setIsGeneratingRoadmap(false);
     }
   };
 
@@ -329,9 +347,9 @@ export default function StudentRoutes() {
   // derive current page from location
   const path = location.pathname.replace(/^\/student\/?/, '') || 'dashboard';
 
-  if (showOnboarding) return <OnboardingFlow onComplete={handleOnboardingComplete} onBack={() => setShowOnboarding(false)} />;
-
-  return (
+  const content = showOnboarding ? (
+    <OnboardingFlow onComplete={handleOnboardingComplete} onBack={() => setShowOnboarding(false)} />
+  ) : (
     <Routes>
       <Route path="/" element={
         <DashboardLayout
@@ -370,5 +388,20 @@ export default function StudentRoutes() {
         <Route path="help" element={<div className="p-6 text-white">Help & Support</div>} />
       </Route>
     </Routes>
+  );
+
+  return (
+    <>
+      {isGeneratingRoadmap && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="rounded-xl border border-accent/30 bg-dark-secondary/95 p-6 w-[90%] max-w-sm text-center shadow-xl">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-accent/30 border-t-accent animate-spin" aria-hidden="true" />
+            <h3 className="text-lg font-semibold mb-1">Generating your roadmap…</h3>
+            <p className="text-sm text-gray-400">This can take 10–20 seconds. Please wait.</p>
+          </div>
+        </div>
+      )}
+      {content}
+    </>
   );
 }
