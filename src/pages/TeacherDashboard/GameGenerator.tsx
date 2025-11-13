@@ -67,16 +67,48 @@ export default function GameGenerator({ onBack, onSave }: GameGeneratorProps) {
     setApiStatus(null);
 
     try {
+      const toDisplayText = (v: any): string => {
+        if (v == null) return '';
+        if (typeof v === 'string') return v;
+        if (Array.isArray(v)) return v.map(toDisplayText).join('\n');
+        if (typeof v === 'object') {
+          if (typeof (v as any).description === 'string') return (v as any).description;
+          if (typeof (v as any).content === 'string') return (v as any).content;
+          if (typeof (v as any).text === 'string') return (v as any).text;
+          return JSON.stringify(v, null, 2);
+        }
+        return String(v);
+      };
       const selectedGame = GAME_TYPES.find(g => g.id === gameType);
-      const apiGameType = selectedGame?.label?.toLowerCase() || gameType;
+      const apiGameTypeLabel = (selectedGame?.label || gameType).toLowerCase();
       const resp = await postJSON('/teacher/game/generate', {
-        gameType: apiGameType,
+        // Backend expects one of: "quiz game", "word match", "crossword", "memory game"
+        gameType: apiGameTypeLabel,
         gradeLevel,
         topic: topicTheme,
-        language,
+        language: language.toLowerCase(),
       });
-      const text = resp?.data?.generatedText || '';
-      setGeneratedGame(stripStars(text));
+      const payload = (resp?.data && (resp.data.data || resp.data)) || resp;
+      let text =
+        payload?.generatedText ||
+        payload?.gameText ||
+        payload?.description ||
+        payload?.content ||
+        payload?.result ||
+        payload?.text ||
+        payload?.game?.description ||
+        '';
+      if (!text) {
+        text = toDisplayText(payload);
+      }
+      if (!text) {
+        setApiError('No game content returned from server');
+        setApiStatus((resp as any)?.status ?? null);
+        setGeneratedGame('');
+        try { console.warn('Game generate: unexpected response shape', resp); } catch {}
+      } else {
+        setGeneratedGame(stripStars(text));
+      }
     } catch (e: any) {
       const msg = e?.message || 'Failed to generate game';
       setApiError(msg);
@@ -121,12 +153,12 @@ export default function GameGenerator({ onBack, onSave }: GameGeneratorProps) {
               // Persist to backend Game endpoint
               try {
                 const selectedGame = GAME_TYPES.find(g => g.id === gameType);
-                const apiGameType = selectedGame?.label?.toLowerCase() || gameType;
+                const apiGameType = (selectedGame?.label || gameType).toLowerCase();
                 await postJSON('/teacher/game/', {
                   gameType: apiGameType,
                   gradeLevel,
                   topic: topicTheme,
-                  language,
+                  language: language.toLowerCase(),
                   game: {
                     title: title || 'Game',
                     description: generatedGame || '',
