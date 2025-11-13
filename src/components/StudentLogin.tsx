@@ -17,6 +17,9 @@ export default function StudentLogin({ onSubmit, loading, serverError, onForgot 
     setError(null);
     if (!username) return setError('Please enter your username.');
     if (!password) return setError('Please enter your password.');
+    // Log submitted identifier (dev only)
+    // eslint-disable-next-line no-console
+    console.log('[auth] StudentLogin submit', { identifier: username });
     onSubmit?.(username, password);
   };
 

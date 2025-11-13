@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -23,6 +25,8 @@ import Terms from '../pages/legal/Terms';
 import Security from '../pages/legal/Security';
 import TeacherDashboard from '../pages/TeacherDashboard';
 import StudentDashboard from '../components/StudentDashboard';
+import { AuthProvider, useAuth } from '../utils/auth';
+import { Navigate } from 'react-router-dom';
 
 function App() {
   const navigate = useNavigate();
@@ -30,41 +34,78 @@ function App() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const handleLogin = async (role: 'teacher' | 'student', username: string, password: string) => {
+  const handleLogin = async (role: 'teacher' | 'student', identifier: string, password: string) => {
     setLoginError(null);
     setLoginLoading(true);
     try {
-      const res = await fetch(`/api/auth/${role}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+      // Call configured API base -> /user/login
+      const { postJSON } = await import('../utils/api');
+      const payload = { identifier, password };
+      // Log what we're sending (dev-only) — do not include role in payload
+      // eslint-disable-next-line no-console
+      console.log('[auth] Sending login request to /user/login', { payload });
+      const data = await postJSON('/user/login', payload);
+      // eslint-disable-next-line no-console
+      console.log('[auth] Login response:', data);
 
-      if (res.ok) {
-        navigate('/');
-        return;
+      // Backend sets HttpOnly cookies for access/refresh tokens; do not set cookies manually here.
+      // We still keep any tokens returned in the response body in case we want to use them client-side later.
+      const access = data?.data?.accessToken || data?.accessToken || data?.token;
+      const refresh = data?.data?.refreshToken || data?.refreshToken;
+
+      // Optionally store profile info (from login response)
+      const user = data?.data?.user || data?.user;
+      if (user) {
+        try { localStorage.setItem(`${role}Profile`, JSON.stringify(user)); } catch {}
       }
 
-      if (res.status === 404) {
-        navigate(role === 'teacher' ? '/signup-teacher' : '/signup-student');
-        return;
-      }
+      // Fetch /user/me to verify role and get full profile
+      try {
+        const { getJSON } = await import('../utils/api');
+        const me = await getJSON('/user/me');
+        const meUser = me?.data?.user || me?.user;
+        const meProfile = me?.data?.profile;
 
-      if (res.status === 401) {
-        setLoginError('Invalid credentials.');
+        // store profile if available
+        if (meUser) {
+          try { localStorage.setItem('currentUser', JSON.stringify(meUser)); } catch {}
+        }
+        if (meProfile) {
+          try { localStorage.setItem('currentProfile', JSON.stringify(meProfile)); } catch {}
+        }
+
+        // Role enforcement: if attempting teacher login, ensure backend user role is teacher
+        if (role === 'teacher') {
+          if (meUser?.role === 'teacher') {
+            navigate('/teacher-dashboard');
+            return;
+          }
+          // show toast error and do not navigate
+          toast.error('No teacher is registered with this email/username');
+          return;
+        }
+
+        // For student role, allow student dashboard
+        if (role === 'student') {
+          if (meUser?.role === 'student') {
+            navigate('/student-dashboard');
+            return;
+          }
+          // If role mismatch, show error
+          toast.error('No student is registered with this email/username');
+          return;
+        }
+      } catch (errMe: any) {
+        // If fetching /user/me fails, fall back to dashboard navigation
+        navigate(role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard');
         return;
       }
-    } catch (err) {
-      // ignore and fall back to heuristic
+    } catch (err: any) {
+      const msg = String(err?.message || err || 'Login failed');
+      // Server may return 401 or other messages; show as error
+      setLoginError(msg.includes('401') ? 'Invalid credentials.' : msg);
     } finally {
       setLoginLoading(false);
-    }
-
-    // Fallback heuristic: if username length seems valid (>2) treat as existing; else redirect to signup
-    if (username.length > 2 && password.length >= 1) {
-      navigate('/');
-    } else {
-      navigate(role === 'teacher' ? '/signup-teacher' : '/signup-student');
     }
   };
 
@@ -98,8 +139,35 @@ function App() {
     </div>
   );
 
+  function RequireAuth({ children, role }: { children: JSX.Element, role: 'teacher' | 'student' }) {
+    const { user, loading } = useAuth();
+    if (loading) return <div />; // or spinner
+    if (!user) {
+      // attempt to hydrate from localStorage (login flow may have just set it)
+      try {
+        const raw = localStorage.getItem('currentUser');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.role === role) return children;
+          toast.error(role === 'teacher' ? 'No teacher is assigned with the current email id/password' : 'Account does not have student access');
+          return <Navigate to="/login" replace />;
+        }
+      } catch (e) {}
+
+      toast.error('Not authenticated. Please login.');
+      return <Navigate to="/login" replace />;
+    }
+    if (user.role !== role) {
+      toast.error(role === 'teacher' ? 'No teacher is assigned with the current email id/password' : 'Account does not have student access');
+      return <Navigate to="/login" replace />;
+    }
+    return children;
+  }
+
   return (
-    <Routes>
+    <AuthProvider>
+      <ToastContainer />
+      <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<LoginPage onBack={() => navigate('/')} onSignupTeacher={() => navigate('/signup-teacher')} onSignupStudent={() => navigate('/signup-student')} onChooseRole={(role) => navigate(role === 'teacher' ? '/login/teacher' : '/login/student')} />} />
       <Route path="/login/teacher" element={<LoginTeacherPage onBack={() => navigate('/login')} onLogin={(username: string, password: string) => handleLogin('teacher', username, password)} onSignup={() => navigate('/signup-teacher')} loading={loginLoading} error={loginError} onForgot={() => navigate('/forgot/teacher')} />} />
@@ -123,9 +191,10 @@ function App() {
       <Route path="/terms" element={<WithShell><Terms /></WithShell>} />
       <Route path="/security" element={<WithShell><Security /></WithShell>} />
 
-      <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-      <Route path="/student-dashboard" element={<StudentDashboard onLogout={() => navigate('/')} />} />
-    </Routes>
+      <Route path="/teacher-dashboard" element={<RequireAuth role="teacher"><TeacherDashboard /></RequireAuth>} />
+      <Route path="/student-dashboard" element={<RequireAuth role="student"><StudentDashboard onLogout={() => navigate('/')} /></RequireAuth>} />
+      </Routes>
+    </AuthProvider>
   );
 }
 

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
+import { postJSON } from '../utils/api';
 import { Eye, EyeOff } from 'lucide-react';
 // Supabase-based email reset is no longer used in the OTP flow.
 // Keeping import commented for potential future integration.
@@ -20,8 +21,7 @@ export default function ForgotPasswordPage({ role: _role, onBack }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
-  const [otpExpiresAt, setOtpExpiresAt] = useState<number | null>(null);
+  // server-backed OTP; no local generation
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''));
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [showPassword, setShowPassword] = useState(false);
@@ -39,21 +39,15 @@ export default function ForgotPasswordPage({ role: _role, onBack }: Props) {
     }
     try {
       setLoading(true);
-      // Frontend-only: generate a 6-digit OTP locally and set a 5-min expiry
-      const code = String(Math.floor(100000 + Math.random() * 900000));
-      const ttlMs = 5 * 60 * 1000;
-      setGeneratedOtp(code);
-      setOtpExpiresAt(Date.now() + ttlMs);
-      // Optional: developer-only visibility
-      // console.log(`[dev] OTP for ${email}: ${code} (valid 5 min)`);
-
-      setInfo('If an account exists, an OTP has been generated. Please check your inbox.');
+      // Call backend to send OTP (dev server logs OTP to console)
+      await postJSON('/auth/send-otp', { email });
+      setInfo('If an account exists, an OTP has been sent. Check server logs for dev OTP.');
       setStep('verify');
       setOtpDigits(Array(6).fill(''));
       // Focus first OTP box on next paint
       setTimeout(() => otpRefs.current[0]?.focus(), 0);
     } catch (err: any) {
-      setError('Could not generate OTP. Please try again.');
+      setError(err?.message || 'Could not request OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -77,23 +71,12 @@ export default function ForgotPasswordPage({ role: _role, onBack }: Props) {
     }
     try {
       setLoading(true);
-      // Frontend-only OTP verification and password update
-      if (!generatedOtp || !otpExpiresAt) {
-        setError('OTP not requested yet. Please request a new OTP.');
-        return;
-      }
-      if (Date.now() > otpExpiresAt) {
-        setError('OTP expired. Please request a new one.');
-        return;
-      }
-      if (otp !== generatedOtp) {
-        setError('Invalid OTP.');
-        return;
-      }
-      // Simulate success
+      // Ask backend to verify OTP and reset password
+      await postJSON('/auth/reset-with-otp', { email, otp, newPassword: password });
+      setInfo('Password reset successfully. You can now sign in.');
       setStep('done');
     } catch (err: any) {
-      setError('Could not reset password. Please try again.');
+      setError(err?.message || 'Could not reset password. Please try again.');
     } finally {
       setLoading(false);
     }

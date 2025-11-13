@@ -33,7 +33,7 @@ export default function LoginStudentPage({ onBack, onLogin, onSignup, loading, e
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl font-bold text-white mb-2">Student Login</h2>
-            <p className="text-gray-400 mb-6">Sign in with your username to access student tools.</p>
+            <p className="text-gray-400 mb-6">Sign in with your username/email to access student tools.</p>
             
             <StudentLogin
               onSubmit={(username, password) => onLogin?.(username, password)}
