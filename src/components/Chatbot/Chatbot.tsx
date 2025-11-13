@@ -71,11 +71,17 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div
+      className="fixed z-50"
+      style={{
+        right: '0.75rem',
+        bottom: 'max(0.75rem, calc(env(safe-area-inset-bottom) + 0.5rem))',
+      }}
+    >
       {/* Toggle Button */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="group relative w-14 h-14 rounded-full border border-accent/30 bg-dark-secondary shadow-lg hover:shadow-accent/20 hover:border-accent/50 transition-all overflow-hidden"
+        className="group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-accent/30 bg-dark-secondary shadow-lg hover:shadow-accent/20 hover:border-accent/50 transition-all overflow-hidden"
         aria-label="Open chatbot"
       >
         {/* Logo filled with Transform gradient (Hero: from-accent to-accent-light) using mask */}
@@ -105,7 +111,11 @@ export default function Chatbot() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="fixed inset-x-2 bottom-20 md:absolute md:inset-auto md:bottom-16 md:right-0 md:w-[380px] w-auto max-w-[92vw] rounded-xl border border-gray-800 bg-dark-secondary/95 backdrop-blur-md shadow-2xl overflow-hidden"
+            className="fixed z-[60] rounded-xl border border-gray-800 bg-dark-secondary/95 backdrop-blur-md shadow-2xl overflow-hidden
+                       w-[92vw] left-1/2 -translate-x-1/2
+                       md:w-[70vw] md:max-w-[720px] md:left-1/2 md:-translate-x-1/2
+                       lg:w-[400px] lg:right-0 lg:left-auto lg:translate-x-0"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
