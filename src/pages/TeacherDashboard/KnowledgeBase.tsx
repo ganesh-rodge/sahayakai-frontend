@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { postJSON } from '../../utils/api';
+import { stripStars } from '../../utils/sanitize';
 
 interface KnowledgeBaseProps {
   onBack: () => void;
@@ -27,6 +29,8 @@ export default function KnowledgeBase({ onBack, onSave }: KnowledgeBaseProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAnswer, setGeneratedAnswer] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState('');
+  const [apiStatus, setApiStatus] = useState<number | null>(null);
 
   // Preload from 'Open' action
   useEffect(() => {
@@ -62,83 +66,24 @@ export default function KnowledgeBase({ onBack, onSave }: KnowledgeBaseProps) {
 
     setIsGenerating(true);
     setErrors({});
+    setApiError('');
+    setApiStatus(null);
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const sampleAnswer = `# Answer to: ${question}
-
-## Response in ${language}
-
-### Overview
-This is a comprehensive answer to your question about "${question}". Let me break this down into easy-to-understand sections.
-
-### Main Explanation
-${question.toLowerCase().includes('what is') || question.toLowerCase().includes('what are')
-  ? `The concept you're asking about is fundamental to understanding this subject. Here's a detailed explanation:
-
-1. **Definition**: This refers to the basic principle or concept that forms the foundation of this topic.
-
-2. **Key Components**:
-   - First important aspect
-   - Second critical element
-   - Third essential feature
-
-3. **How it Works**: The process involves several steps that work together systematically to produce the desired outcome.`
-  : question.toLowerCase().includes('how')
-  ? `Let me explain the process step by step:
-
-**Step 1**: Initial phase where the foundation is established
-**Step 2**: Development phase where key changes occur
-**Step 3**: Final phase where results are observed
-
-The mechanism involves careful coordination between different elements.`
-  : `Here's what you need to know:
-
-The topic relates to several important concepts that are interconnected. Understanding these relationships helps build a complete picture of the subject matter.
-
-**Key Points**:
-- First major point with detailed explanation
-- Second important consideration
-- Third crucial aspect to remember`}
-
-### Practical Examples
-Let me provide some real-world examples to illustrate this concept:
-
-**Example 1**: In everyday life, you can observe this when...
-
-**Example 2**: Another common instance is...
-
-**Example 3**: Students often encounter this in...
-
-### Common Misconceptions
-Some people mistakenly believe that... However, the actual truth is...
-
-### Related Concepts
-This topic connects to:
-- Related Topic 1
-- Related Topic 2
-- Related Topic 3
-
-### Teaching Tips
-When explaining this to students:
-1. Start with simple analogies they can relate to
-2. Use visual aids and diagrams
-3. Provide hands-on activities when possible
-4. Check understanding frequently
-
-### Further Reading
-For deeper understanding, students can explore:
-- Additional resource topics
-- Extended learning materials
-- Practice exercises
-
----
-
-*Generated with Sahayak-AI Knowledge Base*
-*Response Language: ${language}*`;
-
-    setGeneratedAnswer(sampleAnswer);
-    setIsGenerating(false);
+    try {
+      const resp = await postJSON('/teacher/knowledge/generate', {
+        responseLanguage: language,
+        question,
+      });
+      const text = resp?.data?.generatedText || '';
+      setGeneratedAnswer(stripStars(text));
+    } catch (e: any) {
+      const msg = e?.message || 'Failed to generate answer';
+      setApiError(msg);
+      setApiStatus(e?.status ?? null);
+      setGeneratedAnswer('');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSampleClick = (sample: string) => {
@@ -173,11 +118,30 @@ For deeper understanding, students can explore:
         <div className="flex items-center gap-3">
           {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
           <button
-            onClick={() => {
-              const payload = generatedAnswer ? { title: `Answer - ${question || 'Query'}`, content: generatedAnswer } : { title: `Answer - ${question || 'Query'}`, content: { language, question } };
-              onSave?.(payload);
-              setSavedMsg('Saved');
-              setTimeout(() => setSavedMsg(''), 1800);
+            onClick={async () => {
+              const title = `Answer - ${question || 'Query'}`.trim();
+              const payloadLocal = generatedAnswer
+                ? { title, content: generatedAnswer }
+                : { title, content: { language, question } };
+
+              // Maintain existing local save behavior for compatibility
+              try { onSave?.(payloadLocal); } catch {}
+
+              // Persist to backend Knowledge endpoint
+              try {
+                await postJSON('/teacher/knowledge/', {
+                  responseLanguage: language,
+                  question,
+                  explanationText: generatedAnswer || '',
+                });
+                setSavedMsg('Saved');
+              } catch (e: any) {
+                const status = e?.status;
+                const msg = e?.message || 'Failed to save to server';
+                setSavedMsg(status === 401 ? 'Login required to save' : `Save failed: ${msg}`);
+              } finally {
+                setTimeout(() => setSavedMsg(''), 1800);
+              }
             }}
             className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm"
           >
@@ -284,6 +248,19 @@ For deeper understanding, students can explore:
               </div>
             )}
           </div>
+
+          {apiError && (
+            <div className="mb-4 text-sm text-red-400">
+              {apiStatus === 401 ? (
+                <div>
+                  <div className="mb-2">You are not logged in. Please sign in to use Knowledge Base.</div>
+                  <a href="/#login-teacher" className="text-accent hover:text-accent-light underline">Go to Teacher Login</a>
+                </div>
+              ) : (
+                apiError
+              )}
+            </div>
+          )}
 
           {!generatedAnswer && !isGenerating && (
             <div className="h-full flex items-center justify-center text-center py-20">

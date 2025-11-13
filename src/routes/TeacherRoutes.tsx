@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import DashboardLayout from '../components/TeacherDashboard/DashboardLayout';
 import DashboardHome from '../components/TeacherDashboard/DashboardHome';
@@ -8,28 +8,55 @@ import KnowledgeBase from '../pages/TeacherDashboard/KnowledgeBase';
 import VisualAidGenerator from '../pages/TeacherDashboard/VisualAidGenerator';
 import LessonPlanner from '../pages/TeacherDashboard/LessonPlanner';
 import GameGenerator from '../pages/TeacherDashboard/GameGenerator';
+import { useAuth } from '../utils/auth';
 
 export default function TeacherRoutes() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [institutionType, setInstitutionType] = useState<'school' | 'college'>('school');
-  const [teacherName, setTeacherName] = useState('Teacher');
+  const { user, profile, loading, refresh, logout } = useAuth();
+
+  const teacherName = useMemo(() => {
+    const fromProfile = profile?.fullName || profile?.name || [profile?.firstName, profile?.lastName].filter(Boolean).join(' ');
+    const fromUser = user?.fullName || user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || (typeof user?.email === 'string' ? user.email.split('@')[0] : '');
+    const fromStorage = (() => { try { const n = localStorage.getItem('teacherName'); return n || ''; } catch { return ''; } })();
+    return (fromProfile || fromUser || fromStorage || 'Teacher').trim();
+  }, [user, profile]);
+
+  const institutionName = useMemo(() => {
+    const schoolInst = (profile as any)?.school?.instituteName || (profile as any)?.schoolName;
+    const collegeInst = (profile as any)?.college?.collegeName || (profile as any)?.collegeName;
+    return schoolInst || collegeInst || '';
+  }, [profile]);
 
   // derive current page from location
   const path = location.pathname.replace(/^\/teacher\/?/, '') || 'dashboard';
 
   useEffect(() => {
-    // placeholder: could load teacher profile from localStorage or API
-    const savedName = localStorage.getItem('teacherName');
+    // Load institution preference
     const savedInstitution = localStorage.getItem('teacherInstitutionType');
-    if (savedName) setTeacherName(savedName);
     if (savedInstitution === 'school' || savedInstitution === 'college') setInstitutionType(savedInstitution);
   }, []);
 
+  useEffect(() => {
+    // Try to refresh auth if we don't have a name yet
+    if (!loading && !user) {
+      refresh().catch(() => {});
+    }
+  }, [loading, user, refresh]);
+
+  useEffect(() => {
+    const level = String((profile as any)?.eduLevel || '').toLowerCase();
+    if (level === 'school' || level === 'college') {
+      setInstitutionType(level as 'school' | 'college');
+      try { localStorage.setItem('teacherInstitutionType', level); } catch {}
+    }
+  }, [profile]);
+
   return (
     <Routes>
-      <Route path="/" element={<DashboardLayout currentPage={path as any} onLogout={() => navigate('/')} userName={teacherName} userEmail={''} profilePicture={''} />}>
+      <Route path="/" element={<DashboardLayout currentPage={path as any} onLogout={logout} userName={teacherName} userEmail={(user as any)?.email || ''} secondaryText={institutionName} profilePicture={(profile as any)?.livePhoto || (profile as any)?.avatarUrl || ''} />}>
         <Route index element={<Navigate to="dashboard" replace />} />
   <Route path="dashboard" element={<DashboardHome teacherName={teacherName} institutionType={institutionType} onChangeInstitution={(t: 'school' | 'college') => setInstitutionType(t)} />} />
         <Route path="content-generator" element={<ContentGenerator onBack={() => navigate('/teacher/dashboard')} />} />

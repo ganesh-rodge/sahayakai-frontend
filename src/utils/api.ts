@@ -33,8 +33,12 @@ export async function postJSON(path: string, body: any) {
   }
   if (!res.ok) {
     const msg = data?.error || data?.message || res.statusText || 'Request failed';
-    throw new Error(msg);
+    const err: any = new Error(msg);
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
+  
   return data;
 }
 
@@ -45,9 +49,56 @@ export async function getJSON(path: string) {
   const data = await res.json();
   if (!res.ok) {
     const msg = data?.error || data?.message || res.statusText || 'Request failed';
-    throw new Error(msg);
+    const err: any = new Error(msg);
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
   return data;
 }
 
-export default { postJSON, getJSON };
+export async function deleteJSON(path: string) {
+  const url = buildUrl(path);
+  const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+  let data: any = null;
+  try {
+    // Some endpoints may return 204 No Content
+    data = await res.json();
+  } catch (e) {
+    data = null;
+  }
+  if (!res.ok) {
+    const msg = data?.error || data?.message || res.statusText || 'Request failed';
+    const err: any = new Error(msg);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+export async function postForm(path: string, form: FormData) {
+  const url = buildUrl(path);
+  const res = await fetch(url, {
+    method: 'POST',
+    // Don't set Content-Type for FormData; browser will set proper boundary
+    credentials: 'include',
+    body: form,
+  });
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch (e) {
+    data = null;
+  }
+  if (!res.ok) {
+    const msg = data?.error || data?.message || res.statusText || 'Request failed';
+    const err: any = new Error(msg);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+export default { postJSON, getJSON, deleteJSON, postForm };

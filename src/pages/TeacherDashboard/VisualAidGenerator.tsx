@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { postJSON } from '../../utils/api';
+import { stripStars } from '../../utils/sanitize';
 
 interface VisualAidGeneratorProps {
   onBack: () => void;
@@ -16,9 +18,12 @@ export default function VisualAidGenerator({ onBack, onSave }: VisualAidGenerato
   const [savedMsg, setSavedMsg] = useState('');
   const [visualType, setVisualType] = useState('');
   const [description, setDescription] = useState('');
+  const [language, setLanguage] = useState('English');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedVisual, setGeneratedVisual] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState('');
+  const [apiStatus, setApiStatus] = useState<number | null>(null);
 
   // Preload from 'Open' action
   useEffect(() => {
@@ -53,236 +58,41 @@ export default function VisualAidGenerator({ onBack, onSave }: VisualAidGenerato
 
     setIsGenerating(true);
     setErrors({});
+    setApiError('');
+    setApiStatus(null);
 
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    const selectedType = VISUAL_AID_TYPES.find(t => t.id === visualType);
-
-    const sampleVisual = `# ${selectedType?.label}: ${description}
-
-## Generated Visual Aid
-
-${visualType === 'diagram' ? `
-┌─────────────────────────────────────────────────────────┐
-│                    ${description}                        │
-│                                                           │
-│     ┌──────────────┐                                     │
-│     │   Start      │                                     │
-│     └──────┬───────┘                                     │
-│            │                                              │
-│            ▼                                              │
-│     ┌──────────────┐                                     │
-│     │  Process 1   │────────┐                           │
-│     └──────┬───────┘        │                           │
-│            │                 │                            │
-│            ▼                 ▼                            │
-│     ┌──────────────┐  ┌──────────────┐                 │
-│     │  Process 2   │  │   Decision   │                  │
-│     └──────┬───────┘  └──────┬───────┘                 │
-│            │                 │                            │
-│            └────────┬────────┘                           │
-│                     │                                     │
-│                     ▼                                     │
-│             ┌──────────────┐                            │
-│             │   Process 3  │                             │
-│             └──────┬───────┘                            │
-│                    │                                      │
-│                    ▼                                      │
-│             ┌──────────────┐                            │
-│             │   End Result │                             │
-│             └──────────────┘                            │
-└─────────────────────────────────────────────────────────┘
-
-Key Components:
-• Start: Initial phase of the process
-• Process 1: First major step
-• Process 2: Secondary processing
-• Decision: Critical decision point
-• Process 3: Final processing step
-• End Result: Final outcome
-
-Instructions for Use:
-1. Print this diagram on A4 or larger paper
-2. Use colors to highlight different stages
-3. Add student notes around each component
-4. Discuss each step with the class
-`
-: visualType === 'chart' ? `
-┌─────────────────────────────────────────────────────────┐
-│              ${description}                              │
-│                                                           │
-│  100% ┤                          ╭───╮                   │
-│       │                          │   │                   │
-│   80% ┤           ╭───╮          │   │                   │
-│       │           │   │          │   │                   │
-│   60% ┤   ╭───╮   │   │  ╭───╮  │   │                   │
-│       │   │   │   │   │  │   │  │   │                   │
-│   40% ┤   │   │   │   │  │   │  │   │   ╭───╮          │
-│       │   │   │   │   │  │   │  │   │   │   │          │
-│   20% ┤   │   │   │   │  │   │  │   │   │   │          │
-│       │   │   │   │   │  │   │  │   │   │   │          │
-│    0% └───┴───┴───┴───┴──┴───┴──┴───┴───┴───┴──────────│
-│         Cat1  Cat2  Cat3  Cat4  Cat5                     │
-└─────────────────────────────────────────────────────────┘
-
-Data Points:
-• Category 1: 60% - Significant presence
-• Category 2: 80% - High performance
-• Category 3: 65% - Above average
-• Category 4: 100% - Maximum value
-• Category 5: 45% - Moderate level
-
-Analysis:
-This chart shows the distribution and comparison across
-different categories. Category 4 shows the highest value,
-while Category 5 represents the lowest.
-
-Teaching Notes:
-- Discuss what each category represents
-- Compare relative heights and differences
-- Calculate percentages and ratios
-- Analyze trends and patterns
-`
-: visualType === 'map' ? `
-┌─────────────────────────────────────────────────────────┐
-│              ${description}                              │
-│                                                           │
-│                    ┌─────────────┐                       │
-│                    │ Central     │                       │
-│                    │ Concept     │                       │
-│                    └──────┬──────┘                       │
-│                           │                               │
-│         ┌────────────────┼────────────────┐             │
-│         │                 │                 │             │
-│         ▼                 ▼                 ▼             │
-│   ┌──────────┐     ┌──────────┐     ┌──────────┐       │
-│   │ Branch 1 │     │ Branch 2 │     │ Branch 3 │       │
-│   └────┬─────┘     └────┬─────┘     └────┬─────┘       │
-│        │                 │                 │              │
-│   ┌────┴────┐       ┌───┴───┐        ┌───┴───┐         │
-│   ▼         ▼       ▼       ▼        ▼       ▼          │
-│ ┌───┐    ┌───┐   ┌───┐   ┌───┐    ┌───┐   ┌───┐       │
-│ │Sub│    │Sub│   │Sub│   │Sub│    │Sub│   │Sub│       │
-│ │1.1│    │1.2│   │2.1│   │2.2│    │3.1│   │3.2│       │
-│ └───┘    └───┘   └───┘   └───┘    └───┘   └───┘       │
-└─────────────────────────────────────────────────────────┘
-
-Concept Hierarchy:
-
-Central Concept: Main topic or theme
-
-Branch 1: First major division
-  • Sub-concept 1.1: Detailed aspect
-  • Sub-concept 1.2: Related element
-
-Branch 2: Second major division
-  • Sub-concept 2.1: Key component
-  • Sub-concept 2.2: Supporting idea
-
-Branch 3: Third major division
-  • Sub-concept 3.1: Important feature
-  • Sub-concept 3.2: Additional detail
-
-Connections:
-- All branches connect to the central concept
-- Sub-concepts support their parent branches
-- Relationships show hierarchy and organization
-
-Usage Guide:
-1. Start from the center and work outward
-2. Explain each branch's relationship to the center
-3. Explore sub-concepts in detail
-4. Show connections between branches
-`
-: `
-┌─────────────────────────────────────────────────────────┐
-│              ${description}                              │
-│                                                           │
-│  PAST ←──────────────────────────────────→ PRESENT      │
-│                                                           │
-│  ▼        ▼        ▼        ▼        ▼        ▼          │
-│                                                           │
-│ 1900     1920     1940     1960     1980     2000        │
-│  │        │        │        │        │        │          │
-│  │        │        │        │        │        │          │
-│  ●────────●────────●────────●────────●────────●          │
-│  │        │        │        │        │        │          │
-│Event 1  Event 2  Event 3  Event 4  Event 5  Event 6     │
-│                                                           │
-└─────────────────────────────────────────────────────────┘
-
-Timeline Events:
-
-📍 Event 1 (1900)
-   - Description of what happened
-   - Significance and impact
-   - Key people involved
-
-📍 Event 2 (1920)
-   - Major development or change
-   - Consequences and effects
-   - Related outcomes
-
-📍 Event 3 (1940)
-   - Important milestone
-   - Historical context
-   - Long-term implications
-
-📍 Event 4 (1960)
-   - Critical turning point
-   - Changes introduced
-   - Lasting effects
-
-📍 Event 5 (1980)
-   - Significant progress
-   - Innovations or discoveries
-   - Impact on future
-
-📍 Event 6 (2000)
-   - Recent developments
-   - Current relevance
-   - Future implications
-
-Context & Analysis:
-This timeline shows the progression and development of
-events over time. Each point represents a significant
-milestone that contributed to the overall narrative.
-
-Teaching Activities:
-- Discuss cause and effect between events
-- Analyze the time periods between events
-- Compare early vs. later developments
-- Create additional timeline branches
-`}
-
----
-
-Visual Aid Information:
-• Type: ${selectedType?.label}
-• Description: ${description}
-• Format: ASCII Art / Text-based
-• Purpose: Classroom teaching and presentations
-
-Suggested Use:
-1. Display on projector or smartboard
-2. Print for student handouts
-3. Use as discussion starter
-4. Adapt for different grade levels
-5. Add colors when printing
-
-Customization Tips:
-- Add specific labels relevant to your lesson
-- Include student names or examples
-- Use different colors for emphasis
-- Scale size based on classroom needs
-- Create interactive versions with movable parts
-
----
-
-*Generated with Sahayak-AI Visual Aid Generator*`;
-
-    setGeneratedVisual(sampleVisual);
-    setIsGenerating(false);
+    try {
+      const resp = await postJSON('/teacher/visual/generate', {
+        visualType,
+        description,
+        language: language.toLowerCase(),
+      });
+      const payload = (resp?.data && (resp.data.data || resp.data)) || resp;
+      const text =
+        payload?.generatedText ||
+        payload?.stepsText ||
+        payload?.visualText ||
+        payload?.content ||
+        payload?.visual ||
+        payload?.result ||
+        payload?.text ||
+        '';
+      if (!text) {
+        setApiError('No visual content returned from server');
+        setApiStatus((resp as any)?.status ?? null);
+        setGeneratedVisual('');
+        try { console.warn('Visual generate: unexpected response shape', resp); } catch {}
+      } else {
+        setGeneratedVisual(stripStars(text));
+      }
+    } catch (e: any) {
+      const msg = e?.message || 'Failed to generate visual aid';
+      setApiError(msg);
+      setApiStatus(e?.status ?? null);
+      setGeneratedVisual('');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleReset = () => {
@@ -321,11 +131,31 @@ Customization Tips:
         <div className="flex items-center gap-3">
           {savedMsg && <div className="text-sm text-green-400">{savedMsg}</div>}
           <button
-            onClick={() => {
-              const payload = generatedVisual ? { title: `${visualType || 'Visual Aid'}`, content: generatedVisual } : { title: `${visualType || 'Visual Aid'}`, content: { visualType, description } };
-              onSave?.(payload);
-              setSavedMsg('Saved');
-              setTimeout(() => setSavedMsg(''), 1800);
+            onClick={async () => {
+              const title = `${visualType || 'Visual Aid'}`.trim();
+              const payloadLocal = generatedVisual
+                ? { title, content: generatedVisual }
+                : { title, content: { visualType, description } };
+
+              // Maintain existing local callback
+              try { onSave?.(payloadLocal); } catch {}
+
+              // Persist to backend Visual endpoint
+              try {
+                await postJSON('/teacher/visual/', {
+                  visualType,
+                  description,
+                  stepsText: generatedVisual || '',
+                  language,
+                });
+                setSavedMsg('Saved');
+              } catch (e: any) {
+                const status = e?.status;
+                const msg = e?.message || 'Failed to save to server';
+                setSavedMsg(status === 401 ? 'Login required to save' : `Save failed: ${msg}`);
+              } finally {
+                setTimeout(() => setSavedMsg(''), 1800);
+              }
             }}
             className="px-4 py-2 rounded-md bg-accent text-dark-primary font-semibold text-sm"
           >
@@ -339,6 +169,17 @@ Customization Tips:
           <h3 className="text-xl font-bold mb-6">Visual Aid Settings</h3>
 
           <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold mb-3">Language</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="w-full px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors"
+              >
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-semibold mb-3">Type of Visual Aid</label>
               <div className="grid grid-cols-2 gap-3">
@@ -425,6 +266,19 @@ Customization Tips:
               </div>
             )}
           </div>
+
+          {apiError && (
+            <div className="mb-4 text-sm text-red-400">
+              {apiStatus === 401 ? (
+                <div>
+                  <div className="mb-2">You are not logged in. Please sign in to generate visuals.</div>
+                  <a href="/#login-teacher" className="text-accent hover:text-accent-light underline">Go to Teacher Login</a>
+                </div>
+              ) : (
+                apiError
+              )}
+            </div>
+          )}
 
           {!generatedVisual && !isGenerating && (
             <div className="h-full flex items-center justify-center text-center py-20">

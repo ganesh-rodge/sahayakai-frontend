@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { postJSON } from '../../utils/api';
+import { stripStars } from '../../utils/sanitize';
 
 interface ContentGeneratorProps {
   onBack: () => void;
@@ -28,6 +30,7 @@ export default function ContentGenerator({ onBack, onSave }: ContentGeneratorPro
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState('');
 
   // Preload from 'Open' action
   useEffect(() => {
@@ -67,70 +70,25 @@ export default function ContentGenerator({ onBack, onSave }: ContentGeneratorPro
 
     setIsGenerating(true);
     setErrors({});
+    setApiError('');
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const resp = await postJSON('/teacher/content/generate', {
+        language,
+        contentType,
+        gradeLevel,
+        topic,
+      });
 
-    const sampleContent = `# ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} about ${topic}
-
-## Generated for Grade ${gradeLevel} in ${language}
-
-${contentType === 'story' ? `Once upon a time, in a magical land, there was a wonderful adventure about ${topic}. The story unfolds with excitement and teaches valuable lessons about courage, friendship, and wisdom.
-
-Chapter 1: The Beginning
-It was a bright sunny morning when our hero discovered something amazing about ${topic}. The journey had just begun, and there were many surprises waiting ahead.
-
-Chapter 2: The Adventure
-As the tale continues, we learn more about the fascinating world of ${topic}. Each moment brings new discoveries and valuable lessons that help us grow.
-
-Chapter 3: The Conclusion
-Finally, our story comes to a wonderful ending where everyone learns the importance of ${topic} and lives happily ever after.`
-: contentType === 'poem'
-? `In the world of ${topic}, bright and clear,
-Where knowledge blooms throughout the year,
-We learn and grow with every day,
-In such a wonderful, magical way.
-
-The beauty of ${topic} we see,
-Teaching lessons for you and me,
-With rhythm, rhyme, and words so true,
-These verses are crafted just for you.
-
-Remember always what you've learned,
-Success and wisdom are both earned,
-Through dedication and through care,
-The joy of ${topic} you'll always share.`
-: `Scene 1: Introduction
-
-Teacher: Good morning, class! Today we're going to explore the fascinating world of ${topic}.
-
-Student 1: That sounds exciting! I've always wanted to learn more about ${topic}.
-
-Student 2: Me too! Can you tell us why ${topic} is so important?
-
-Teacher: Great question! Let me explain...
-
-Scene 2: Discovery
-
-Student 1: I think I'm starting to understand ${topic} better now.
-
-Student 2: Yes, this makes so much sense when you explain it this way.
-
-Teacher: Wonderful! You're both making excellent progress.
-
-Scene 3: Conclusion
-
-Teacher: So, what have we learned about ${topic} today?
-
-Students: We've learned that ${topic} is important because it helps us understand the world better!
-
-Teacher: Exactly! Well done, everyone!`}
-
----
-
-Generated with Sahayak-AI Content Generator`;
-
-    setGeneratedContent(sampleContent);
-    setIsGenerating(false);
+      const text = resp?.data?.generatedText || '';
+      setGeneratedContent(stripStars(text));
+    } catch (e: any) {
+      const msg = e?.message || 'Failed to generate content';
+      setApiError(msg);
+      setGeneratedContent('');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleReset = () => {
@@ -269,11 +227,20 @@ Generated with Sahayak-AI Content Generator`;
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold">Generated Content</h3>
             {generatedContent && (
-              <button className="text-sm text-accent hover:text-accent-light transition-colors">
+              <button
+                onClick={() => navigator.clipboard.writeText(generatedContent)}
+                className="text-sm text-accent hover:text-accent-light transition-colors"
+              >
                 Copy
               </button>
             )}
           </div>
+
+          {apiError && (
+            <div className="mb-4 text-sm text-red-400">
+              {apiError}
+            </div>
+          )}
 
           {!generatedContent && !isGenerating && (
             <div className="h-full flex items-center justify-center text-center py-20">

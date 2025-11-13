@@ -10,9 +10,10 @@ interface DashboardLayoutProps {
   userName?: string;
   userEmail?: string;
   profilePicture?: string;
+  secondaryText?: string; // e.g., institution name
 }
 
-export default function DashboardLayout({ children, onLogout, userName = 'Teacher', userEmail = '', profilePicture = '' }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, onLogout, userName = 'Teacher', userEmail = '', profilePicture = '', secondaryText = '' }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [
@@ -89,7 +90,7 @@ export default function DashboardLayout({ children, onLogout, userName = 'Teache
                   )}
                   <div className="flex-1">
                     <div className="font-medium">{userName}</div>
-                    <div className="text-xs text-gray-400">{userEmail}</div>
+                    <div className="text-xs text-gray-400">{secondaryText || userEmail}</div>
                   </div>
                 </div>
                 <motion.button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition-all" whileTap={{ scale: 0.95 }}>
