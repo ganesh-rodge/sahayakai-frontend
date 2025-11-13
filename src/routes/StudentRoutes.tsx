@@ -208,14 +208,18 @@ export default function StudentRoutes() {
   const handleStartLesson = (lessonId: string) => {
     setWeeksData(prevWeeks => prevWeeks.map(week => {
       const newLessons = week.lessons.map(lesson => lesson.id === lessonId ? { ...lesson, completed: !lesson.completed } : lesson);
-      const lessonsCompleted = newLessons.filter(l => l.completed).length;
+      const lessonsCompleted = newLessons.filter((l: Lesson) => l.completed).length;
       const progress = week.totalLessons > 0 ? Math.round((lessonsCompleted / week.totalLessons) * 100) : 0;
       return { ...week, lessons: newLessons, lessonsCompleted, progress };
     }));
   };
 
   const handleSaveProfile = (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => {
-    setUserData({ ...data, profilePicture: data.profilePicture || userData.profilePicture });
+    setUserData(prev => ({
+      ...prev,
+      ...data,
+      profilePicture: data.profilePicture || prev.profilePicture,
+    }));
   };
 
   // Wrapper that maps auth `user` + `profile` into the existing ProfilePage props

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode, ReactElement } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Routes, Route, useNavigate } from 'react-router-dom';
@@ -50,9 +51,6 @@ function App() {
       console.log('[auth] Login response:', data);
 
       // Backend sets HttpOnly cookies for access/refresh tokens; do not set cookies manually here.
-      // We still keep any tokens returned in the response body in case we want to use them client-side later.
-      const access = data?.data?.accessToken || data?.accessToken || data?.token;
-      const refresh = data?.data?.refreshToken || data?.refreshToken;
 
       // Optionally store profile info (from login response)
       const user = data?.data?.user || data?.user;
@@ -135,7 +133,7 @@ function App() {
     </div>
   );
 
-  const WithShell = ({ children }: { children: React.ReactNode }) => (
+  const WithShell = ({ children }: { children: ReactNode }) => (
     <div className="bg-dark-primary">
       <Navbar onLoginClick={() => navigate('/login')} onSignupClick={() => navigate('/signup')} onLogoClick={() => navigate('/')} />
       {children}
@@ -143,30 +141,7 @@ function App() {
     </div>
   );
 
-  function RequireAuth({ children, role }: { children: JSX.Element, role: 'teacher' | 'student' }) {
-    const { user, loading } = useAuth();
-    if (loading) return <div />; // or spinner
-    if (!user) {
-      // attempt to hydrate from localStorage (login flow may have just set it)
-      try {
-        const raw = localStorage.getItem('currentUser');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.role === role) return children;
-          toast.error(role === 'teacher' ? 'No teacher is assigned with the current email id/password' : 'Account does not have student access');
-          return <Navigate to="/login" replace />;
-        }
-      } catch (e) {}
-
-      toast.error('Not authenticated. Please login.');
-      return <Navigate to="/login" replace />;
-    }
-    if (user.role !== role) {
-      toast.error(role === 'teacher' ? 'No teacher is assigned with the current email id/password' : 'Account does not have student access');
-      return <Navigate to="/login" replace />;
-    }
-    return children;
-  }
+  
 
   return (
     <AuthProvider>
