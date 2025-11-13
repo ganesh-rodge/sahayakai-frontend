@@ -105,7 +105,7 @@ export default function Chatbot() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="absolute bottom-16 right-0 w-[340px] sm:w-[380px] rounded-xl border border-gray-800 bg-dark-secondary/95 backdrop-blur-md shadow-2xl overflow-hidden"
+            className="fixed inset-x-2 bottom-20 md:absolute md:inset-auto md:bottom-16 md:right-0 md:w-[380px] w-auto max-w-[92vw] rounded-xl border border-gray-800 bg-dark-secondary/95 backdrop-blur-md shadow-2xl overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
@@ -139,7 +139,7 @@ export default function Chatbot() {
             </div>
 
             {/* Body */}
-            <div ref={bodyRef} className="max-h-[50vh] overflow-y-auto p-3 space-y-3">
+            <div ref={bodyRef} className="max-h-[65dvh] md:max-h-[50vh] overflow-y-auto p-3 space-y-3">
               {messages.map((m, idx) => (
                 <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm border ${m.role === 'user' ? 'bg-accent/20 border-accent/30 text-gray-100' : 'bg-dark-tertiary border-gray-800 text-gray-200'}`}>
