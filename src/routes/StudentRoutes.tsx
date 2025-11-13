@@ -108,14 +108,14 @@ export default function StudentRoutes() {
       // Map server roadmap into local weeksData shape expected by UI
       const mappedWeeks: any[] = (roadmap.weeks || []).map((w: any) => {
         const chapters = Array.isArray(w.chapters) ? w.chapters : (w.chapters || []);
-        const lessons = (chapters || []).map((c: any, idx: number) => ({
+        const lessons: Lesson[] = (chapters || []).map((c: any, idx: number): Lesson => ({
           id: `w${w.weekNumber}l${idx + 1}`,
           title: c.title || String(c || ''),
           description: c.description || '',
           duration: c.estimatedMinutes ? `${Math.round((c.estimatedMinutes || 0) / 60)} hrs` : '',
           completed: !!c.isDone
         }));
-        const lessonsCompleted = lessons.filter(l => l.completed).length;
+        const lessonsCompleted = lessons.filter((l: Lesson) => l.completed).length;
         const totalLessons = lessons.length;
         const progress = totalLessons > 0 ? Math.round((lessonsCompleted / totalLessons) * 100) : 0;
         return {
@@ -166,7 +166,14 @@ export default function StudentRoutes() {
   };
 
   const handleSaveProfile = (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => {
-    setUserData({ ...data, profilePicture: data.profilePicture || userData.profilePicture });
+    // Preserve weeksNeeded while updating user meta
+    setUserData(prev => ({
+      ...prev,
+      userName: data.userName,
+      userEmail: data.userEmail,
+      learningGoal: data.learningGoal,
+      profilePicture: data.profilePicture || prev.profilePicture,
+    }));
   };
 
   // Wrapper that maps auth `user` + `profile` into the existing ProfilePage props

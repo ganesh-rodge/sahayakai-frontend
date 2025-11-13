@@ -5,8 +5,12 @@ interface State {
   info: React.ErrorInfo | null
 }
 
-export default class ErrorBoundary extends React.Component<{}, State> {
-  constructor(props: {}) {
+interface Props {
+  children?: React.ReactNode
+}
+
+export default class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props)
     this.state = { error: null, info: null }
   }
