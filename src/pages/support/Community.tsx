@@ -1,122 +1,77 @@
+// Icons are now served as images from /public/brands; inline SVG components removed.
+
 export default function Community() {
-  const features = [
+  const channels = [
     {
-      icon: '💬',
-      title: 'Discussion Forums',
-      description: 'Connect with other learners and educators to share insights and ask questions.'
+      id: 'whatsapp',
+      name: 'WhatsApp Channel',
+      description: 'Join our official WhatsApp channel for bite-sized updates, community highlights, and quick links.',
+      href: 'https://whatsapp.com/channel/0029VbBY7nD3mFXz0rtcnU3X',
+      colorFrom: 'from-emerald-400',
+      colorTo: 'to-teal-400',
+      icon: '🟢'
     },
     {
-      icon: '🎓',
-      title: 'Study Groups',
-      description: 'Join or create study groups with peers working on similar topics.'
-    },
-    {
-      icon: '🏆',
-      title: 'Leaderboards',
-      description: 'Compete with fellow students and celebrate achievements together.'
-    },
-    {
-      icon: '📚',
-      title: 'Resource Sharing',
-      description: 'Share and discover helpful study materials, notes, and tips.'
+      id: 'telegram',
+      name: 'Telegram Channel',
+      description: 'Follow our Telegram for deeper discussions, resources, and pinned announcements.',
+      href: 'https://t.me/SahayakAI',
+      colorFrom: 'from-sky-400',
+      colorTo: 'to-indigo-500',
+      icon: '✳️'
     }
   ];
 
-  const stats = [
-    { value: '50K+', label: 'Active Members' },
-    { value: '10K+', label: 'Daily Discussions' },
-    { value: '5K+', label: 'Study Groups' },
-    { value: '95%', label: 'Satisfaction Rate' }
-  ];
-
-  const recentTopics = [
-    { title: 'Best practices for mastering calculus', author: 'Sarah K.', replies: 24, time: '2 hours ago' },
-    { title: 'How to prepare for SAT Math', author: 'John D.', replies: 18, time: '5 hours ago' },
-    { title: 'Tips for effective online learning', author: 'Maria L.', replies: 32, time: '1 day ago' },
-    { title: 'Study group for Physics Chapter 5', author: 'Alex P.', replies: 15, time: '1 day ago' },
-    { title: 'Recommended resources for chemistry', author: 'Emma R.', replies: 21, time: '2 days ago' }
-  ];
-
   return (
-    <div className="min-h-screen bg-dark-primary">
-      <div className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Join Our <span className="bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">Community</span>
+    <div className="min-h-screen bg-dark-primary flex items-center">
+      <div className="max-w-5xl mx-auto px-6 py-20 w-full">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">
+            Join our <span className="bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">Community Channels</span>
           </h1>
-          <p className="text-gray-400 text-lg mb-8">
-            Connect, collaborate, and grow together with thousands of learners worldwide
-          </p>
-          <button className="px-8 py-3 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all">
-            Join Now
-          </button>
+          <p className="text-gray-400 max-w-2xl mx-auto">Stay updated and connected — pick a channel below to join our community conversations and resources.</p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-16">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-dark-secondary border border-gray-800 rounded-lg p-6 text-center hover:border-accent transition-colors"
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {channels.map((c) => (
+            <a
+              key={c.id}
+              href={c.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Open ${c.name} (new tab)`}
+              className={`block rounded-2xl p-6 sm:p-8 bg-dark-secondary border border-gray-800 hover:shadow-[0_18px_60px_rgba(0,212,170,0.07)] transition-all transform hover:-translate-y-1 ${c.id === 'whatsapp' ? 'hover:border-emerald-400' : 'hover:border-sky-400'}`}
             >
-              <div className="text-3xl font-bold bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent mb-2">
-                {stat.value}
+              <div className="flex items-start gap-4">
+                <div className={`flex-shrink-0 h-14 w-14 rounded-lg grid place-items-center ring-1 ring-accent/20 ${c.id === 'whatsapp' ? 'bg-[#25D366]' : 'bg-[#229ED9]'}`}>
+                  <img
+                    src={c.id === 'whatsapp' ? '/brands/whatsapp.svg' : '/brands/telegram.svg'}
+                    alt={`${c.name} logo`}
+                    className="h-8 w-8 object-contain"
+                    loading="lazy"
+                    width="32"
+                    height="32"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold mb-1">{c.name}</h3>
+                  <p className="text-gray-400 text-sm mb-4">{c.description}</p>
+                  <div className="flex items-center gap-3">
+                    <span
+                      role="button"
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-dark-primary bg-gradient-to-r ${c.colorFrom} ${c.colorTo} shadow-[0_10px_30px_rgba(0,212,170,0.25)] hover:shadow-[0_18px_40px_rgba(0,212,170,0.4)]`}
+                    >
+                      Join <span aria-hidden>↗</span>
+                    </span>
+                    <span className="text-xs text-gray-500">Opens in new tab</span>
+                  </div>
+                </div>
               </div>
-              <div className="text-gray-400 text-sm">{stat.label}</div>
-            </div>
+            </a>
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-dark-secondary border border-gray-800 rounded-lg p-8 hover:border-accent transition-all hover:scale-105"
-            >
-              <div className="text-5xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-dark-secondary border border-gray-800 rounded-lg p-8">
-          <h2 className="text-2xl font-bold mb-6">Recent Discussions</h2>
-          <div className="space-y-4">
-            {recentTopics.map((topic, index) => (
-              <div
-                key={index}
-                className="bg-dark-tertiary border border-gray-700 rounded-lg p-5 hover:border-accent transition-colors cursor-pointer"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-lg flex-1">{topic.title}</h3>
-                  <span className="text-xs text-gray-500 whitespace-nowrap ml-4">{topic.time}</span>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-gray-400">
-                  <span>By {topic.author}</span>
-                  <span className="text-accent">{topic.replies} replies</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className="w-full mt-6 px-4 py-3 border border-accent text-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all">
-            View All Discussions
-          </button>
-        </div>
-
-        <div className="mt-16 bg-gradient-to-r from-accent/10 to-accent-light/10 border border-accent/30 rounded-lg p-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">Ready to Connect?</h3>
-          <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
-            Join our vibrant community of learners and educators. Share knowledge, get help, and make learning a collaborative experience.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button className="px-6 py-3 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all">
-              Create Account
-            </button>
-            <button className="px-6 py-3 border border-accent text-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all">
-              Explore as Guest
-            </button>
-          </div>
-        </div>
+        <div className="mt-12 text-center text-sm text-gray-500">By joining you agree to follow our community guidelines and keep conversations respectful.</div>
       </div>
     </div>
   );

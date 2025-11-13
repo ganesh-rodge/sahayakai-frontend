@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Project-wide font: DM Serif Display */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+
 @theme {
   --color-dark-primary: #0a0a0f;
   --color-dark-secondary: #13131a;
@@ -37,7 +40,7 @@
 }
 
 :root {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'DM Serif Display', serif;
   color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
