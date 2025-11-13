@@ -192,6 +192,7 @@ export default function StudentDashboard({ onLogout }: StudentDashboardProps) {
     userEmail: '',
     learningGoal: '',
     profilePicture: 'https://avatar.iran.liara.run/public/boy',
+    weeksNeeded: 0,
   });
 
   const [weeksData, setWeeksData] = useState<Week[]>([]);
@@ -226,11 +227,13 @@ export default function StudentDashboard({ onLogout }: StudentDashboardProps) {
   const hasRoadmap = weeksData.length > 0;
 
   const handleOnboardingComplete = (data: { 
+    field?: string;
     learningGoal: string; 
     experience: string[]; 
     timeCommitment: string;
     skillLevel: string;
     preferredTopics: string[];
+    weeksNeeded?: number;
   }) => {
     // Generate roadmap based on onboarding data
     const newRoadmap = generateRoadmap(data.learningGoal, data.experience, data.timeCommitment);
@@ -240,6 +243,7 @@ export default function StudentDashboard({ onLogout }: StudentDashboardProps) {
     setUserData(prev => ({
       ...prev,
       learningGoal: data.learningGoal,
+      weeksNeeded: data.weeksNeeded || prev['weeksNeeded'] || 0,
     }));
     
     setShowOnboarding(false);
@@ -286,10 +290,11 @@ export default function StudentDashboard({ onLogout }: StudentDashboardProps) {
     learningGoal: string;
     profilePicture?: string;
   }) => {
-    setUserData({
+    setUserData(prev => ({
       ...data,
       profilePicture: data.profilePicture || 'https://avatar.iran.liara.run/public/boy',
-    });
+      weeksNeeded: (prev as any).weeksNeeded || 0,
+    }));
   };
 
   // Calculate stats

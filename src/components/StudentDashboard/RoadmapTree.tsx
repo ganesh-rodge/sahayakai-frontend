@@ -16,6 +16,7 @@ export interface Week {
   title: string;
   lessonsCompleted: number;
   totalLessons: number;
+  progress?: number;
   lessons: Lesson[];
 }
 

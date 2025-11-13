@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { postJSON, getJSON } from '../utils/api';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import DashboardLayout from '../components/StudentDashboard/DashboardLayout';
 import DashboardHome from '../components/StudentDashboard/DashboardHome';
@@ -181,18 +183,72 @@ export default function StudentRoutes() {
     return weeks;
   };
 
-  const handleOnboardingComplete = (data: { learningGoal: string; experience: string[]; timeCommitment: string; skillLevel: string; preferredTopics: string[]; weeksNeeded?: number }) => {
-    const newRoadmap = generateRoadmap({
-      learningGoal: data.learningGoal,
-      experience: data.experience,
-      timeCommitment: data.timeCommitment,
+  const handleOnboardingComplete = async (data: { learningGoal: string; experience: string[]; timeCommitment: string; skillLevel: string; preferredTopics: string[]; weeksNeeded?: number }) => {
+    // Prepare payload as required by backend
+    const payload = {
+      field: data.field || data.learningGoal || 'General',
+      goal: data.learningGoal,
+      knownLanguages: Array.isArray(data.experience) ? data.experience.join(',') : String(data.experience || ''),
       skillLevel: data.skillLevel,
-      preferredTopics: data.preferredTopics,
-    });
-    setWeeksData(newRoadmap);
-    setUserData(prev => ({ ...prev, learningGoal: data.learningGoal, weeksNeeded: data.weeksNeeded }));
-    setShowOnboarding(false);
-    navigate('/student/roadmap');
+      interestAreas: Array.isArray(data.preferredTopics) ? data.preferredTopics.join(',') : String(data.preferredTopics || ''),
+      timeCommitment: String(data.timeCommitment || ''),
+      weekCommitment: String(typeof data.weeksNeeded !== 'undefined' ? data.weeksNeeded : '')
+    };
+
+    try {
+      // Save onboarding to backend
+      const saved = await postJSON('/onboarding/', payload);
+      // optional: get onboarding (not strictly needed because server reads it), but keep for validation
+      let onboardingResp = null;
+      try {
+        onboardingResp = await getJSON('/onboarding/me');
+      } catch (e) {
+        // ignore - proceed to generate roadmap
+      }
+
+      // Request roadmap generation (server will read onboarding from DB)
+      const gen = await postJSON('/roadmap/generate', {});
+      // Expected response: { data: { roadmap: { totalWeeks, weeks: [...] } } }
+      const roadmap = gen?.data?.roadmap || gen?.roadmap || null;
+      if (!roadmap) {
+        toast.error('Roadmap generation returned empty result');
+        return;
+      }
+
+      // Map server roadmap into local weeksData shape expected by UI
+      const mappedWeeks: any[] = (roadmap.weeks || []).map((w: any) => {
+        const chapters = Array.isArray(w.chapters) ? w.chapters : (w.chapters || []);
+        const lessons = (chapters || []).map((c: any, idx: number) => ({
+          id: `w${w.weekNumber}l${idx + 1}`,
+          title: c.title || String(c || ''),
+          description: '',
+          duration: '',
+          completed: !!c.isDone
+        }));
+        const lessonsCompleted = lessons.filter(l => l.completed).length;
+        const totalLessons = lessons.length;
+        const progress = totalLessons > 0 ? Math.round((lessonsCompleted / totalLessons) * 100) : 0;
+        return {
+          weekNumber: Number(w.weekNumber || w.week || (w.weekNumber)),
+          title: w.title || `Week ${w.weekNumber}`,
+          lessons: lessons,
+          lessonsCompleted,
+          totalLessons,
+          progress,
+        };
+      });
+
+      setWeeksData(mappedWeeks);
+      try { if (mappedWeeks.length > 0) localStorage.setItem('studentRoadmap', JSON.stringify(mappedWeeks)); } catch {}
+
+      // update userData with learningGoal and weeksNeeded
+      setUserData(prev => ({ ...prev, learningGoal: data.learningGoal, weeksNeeded: data.weeksNeeded || 0 }));
+      setShowOnboarding(false);
+      navigate('/student/roadmap');
+    } catch (err: any) {
+      const msg = String(err?.message || err || 'Failed to save onboarding or generate roadmap');
+      toast.error(msg);
+    }
   };
 
   const handleCreateRoadmap = () => setShowOnboarding(true);

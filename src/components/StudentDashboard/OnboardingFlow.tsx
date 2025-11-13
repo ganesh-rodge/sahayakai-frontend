@@ -4,6 +4,7 @@ import { Target, MessageCircle, Map, BookOpen, ArrowLeft } from 'lucide-react';
 
 interface OnboardingFlowProps {
   onComplete: (data: { 
+    field: string;
     learningGoal: string; 
     experience: string[]; 
     timeCommitment: string;
@@ -82,7 +83,7 @@ export default function OnboardingFlow({ onComplete, onBack }: OnboardingFlowPro
     if (step < 6) {
       setStep(step + 1);
     } else {
-      onComplete({ learningGoal: learningGoal || selectedField, experience, timeCommitment, skillLevel, preferredTopics, weeksNeeded: weeksNeeded || 0 } as any);
+      onComplete({ field: selectedField, learningGoal: learningGoal || selectedField, experience, timeCommitment, skillLevel, preferredTopics, weeksNeeded: weeksNeeded || 0 } as any);
     }
   };
 
