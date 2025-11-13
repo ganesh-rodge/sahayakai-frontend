@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getJSON } from '../../utils/api';
 
 export interface SavedItem {
   id: string;
@@ -13,26 +14,80 @@ export default function SavedWorkList({ onOpen }: { onOpen?: (item: SavedItem) =
   const [selected, setSelected] = useState<SavedItem | null>(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem('teacherSavedWorks');
-    if (raw) {
+    let cancelled = false;
+
+    const normalize = (arr: any[], toolIdHint?: string): SavedItem[] => {
+      return (arr || []).map((it: any) => {
+        const id = it?.id || it?._id || Math.random().toString(36).slice(2);
+        const toolId = it?.toolId || toolIdHint || (it?.explanationText ? 'knowledge-base' : 'content-generator');
+        const savedAt = it?.savedAt || it?.createdAt || it?.updatedAt || new Date().toISOString();
+        const titleFromApi = it?.title
+          || (toolId === 'knowledge-base' && it?.question ? `Answer - ${it.question}` : undefined)
+          || (toolId === 'content-generator' && it?.topic ? `${it?.contentType || 'Content'} - ${it.topic}` : undefined)
+          || 'Saved Work';
+        const content = it?.contentText || it?.explanationText || it?.generatedText || it?.content || it;
+        return { id, toolId, title: titleFromApi, content, savedAt } as SavedItem;
+      });
+    };
+
+    const load = async () => {
+      // Try backend first: both content and knowledge saved lists; fall back to local storage
       try {
-        setItems(JSON.parse(raw));
-      } catch (err) {
-        console.error('Invalid saved works', err);
+        const [contentRes, knowledgeRes] = await Promise.allSettled([
+          getJSON('/teacher/content/saved'),
+          getJSON('/teacher/knowledge/saved'),
+        ]);
+
+        let merged: SavedItem[] = [];
+
+        if (contentRes.status === 'fulfilled') {
+          const data = contentRes.value;
+          const arr = Array.isArray(data?.data) ? data.data : (data?.data?.items || []);
+          merged = merged.concat(normalize(arr, 'content-generator'));
+        }
+
+        if (knowledgeRes.status === 'fulfilled') {
+          const data = knowledgeRes.value;
+          const arr = Array.isArray(data?.data) ? data.data : (data?.data?.items || []);
+          merged = merged.concat(normalize(arr, 'knowledge-base'));
+        }
+
+        if (merged.length > 0) {
+          if (!cancelled) setItems(merged);
+          return;
+        }
+
+        // If both failed or returned empty, fallback to localStorage
+        const raw = localStorage.getItem('teacherSavedWorks');
+        if (raw) {
+          try {
+            const localArr = JSON.parse(raw);
+            if (!cancelled) setItems(localArr);
+          } catch (err) {
+            console.error('Invalid saved works', err);
+          }
+        }
+      } catch (e) {
+        // As a last resort do nothing; UI will show empty
       }
-    }
+    };
+
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   // items are loaded in useEffect; mutations update state directly
 
   const handleDelete = (id: string) => {
     const filtered = items.filter(i => i.id !== id);
+    // Update local fallback store; backend deletion not implemented here
     localStorage.setItem('teacherSavedWorks', JSON.stringify(filtered));
     setItems(filtered);
     if (selected?.id === id) setSelected(null);
   };
 
   const clearAll = () => {
+    // Only clears local fallback; backend bulk delete not implemented
     localStorage.removeItem('teacherSavedWorks');
     setItems([]);
     setSelected(null);

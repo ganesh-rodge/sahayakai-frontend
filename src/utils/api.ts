@@ -33,7 +33,10 @@ export async function postJSON(path: string, body: any) {
   }
   if (!res.ok) {
     const msg = data?.error || data?.message || res.statusText || 'Request failed';
-    throw new Error(msg);
+    const err: any = new Error(msg);
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
   return data;
 }
@@ -45,7 +48,10 @@ export async function getJSON(path: string) {
   const data = await res.json();
   if (!res.ok) {
     const msg = data?.error || data?.message || res.statusText || 'Request failed';
-    throw new Error(msg);
+    const err: any = new Error(msg);
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
   return data;
 }
