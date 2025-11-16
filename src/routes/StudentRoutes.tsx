@@ -165,13 +165,12 @@ export default function StudentRoutes() {
     }));
   };
 
-  const handleSaveProfile = (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => {
+  const handleSaveProfile = (data: { userName: string; userEmail: string; profilePicture?: string }) => {
     // Preserve weeksNeeded while updating user meta
     setUserData(prev => ({
       ...prev,
       userName: data.userName,
       userEmail: data.userEmail,
-      learningGoal: data.learningGoal,
       profilePicture: data.profilePicture || prev.profilePicture,
     }));
   };
@@ -182,7 +181,7 @@ export default function StudentRoutes() {
     onSaveProfile,
   }: {
     weeksData: Week[];
-    onSaveProfile: (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => void;
+    onSaveProfile: (data: { userName: string; userEmail: string; profilePicture?: string }) => void;
   }) {
     const auth = useAuth();
 
@@ -199,7 +198,8 @@ export default function StudentRoutes() {
 
     const userName = meProfile?.firstName || meUser?.username || meUser?.email || 'Student';
     const userEmail = meUser?.email || meProfile?.email || '';
-    const learningGoal = meProfile?.eduLevel || '';
+    const role = meUser?.role || meProfile?.role || '';
+    const qualification = meProfile?.qualification || meProfile?.highestQualification || '';
     const profilePicture = meProfile?.livePhoto || meProfile?.photo || userData.profilePicture || 'https://avatar.iran.liara.run/public/boy';
 
     const totalWeeks = weeksData.length;
@@ -207,7 +207,7 @@ export default function StudentRoutes() {
     const lessonsCompleted = weeksData.reduce((s, w) => s + w.lessonsCompleted, 0);
     const studyTimeHours = 0;
 
-    const handleSave = (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => {
+    const handleSave = (data: { userName: string; userEmail: string; profilePicture?: string }) => {
       // update local state for immediate feedback
       onSaveProfile(data);
       // (Optional) persist to backend later
@@ -217,12 +217,9 @@ export default function StudentRoutes() {
       <ProfilePage
         userName={userName}
         userEmail={userEmail}
-        learningGoal={learningGoal}
+        role={role}
+        qualification={qualification}
         profilePicture={profilePicture}
-        totalWeeks={totalWeeks}
-        totalLessons={totalLessons}
-        lessonsCompleted={lessonsCompleted}
-        studyTimeHours={studyTimeHours}
         onSaveProfile={handleSave}
       />
     );

@@ -1,122 +1,138 @@
-import { useState } from 'react';
-import { User, Mail, Target, Sun, Moon, UserCircle2, Save, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { User, Mail, UserCircle2, Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getJSON } from '../../utils/api';
 
 interface ProfilePageProps {
-  userName: string;
-  userEmail: string;
-  learningGoal: string;
+  userName?: string;
+  userEmail?: string;
+  role?: string;
+  qualification?: string;
   profilePicture?: string;
-  totalWeeks: number;
-  totalLessons: number;
-  lessonsCompleted: number;
-  studyTimeHours: number;
-  onSaveProfile: (data: { userName: string; userEmail: string; learningGoal: string; profilePicture?: string }) => void;
+  onSaveProfile?: (data: { userName: string; userEmail: string; role?: string; qualification?: string; profilePicture?: string }) => void;
 }
 
-const avatars = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=4',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=5',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=6',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=7',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=8',
-];
+// avatars removed; using upload/capture only
 
-export default function ProfilePage({ 
-  userName, 
-  userEmail, 
-  learningGoal, 
-  profilePicture, 
-  totalWeeks,
-  totalLessons,
-  lessonsCompleted,
-  studyTimeHours,
-  onSaveProfile 
-}: ProfilePageProps) {
+export default function ProfilePage({ userName, userEmail, role, qualification, profilePicture, onSaveProfile }: ProfilePageProps) {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
-    userName,
-    userEmail,
-    learningGoal,
+    userName: userName || '',
+    userEmail: userEmail || '',
+    role: role || '',
+    qualification: qualification || '',
     profilePicture: profilePicture || '',
   });
 
+  // Fetch teacher profile from API and map fields
+  useEffect(() => {
+    const pick = (obj: any, paths: string[]): any => {
+      for (const p of paths) {
+        const val = p.split('.').reduce((acc: any, key: string) => (acc == null ? undefined : acc[key]), obj);
+        if (Array.isArray(val) && val.length) return val;
+        if (val !== undefined && val !== null && String(val).trim() !== '') return val;
+      }
+      return undefined;
+    };
+
+    const mapUser = (raw: any) => {
+      const data = raw?.user || raw?.data?.user || raw?.profile || raw?.data || raw;
+      const first = pick(data, ['firstName', 'firstname', 'first_name', 'name.first']) || '';
+      const middle = pick(data, ['middleName', 'middlename', 'middle_name', 'name.middle']) || '';
+      const last = pick(data, ['lastName', 'lastname', 'last_name', 'name.last']) || '';
+      const full = [first, middle, last].filter(Boolean).join(' ').trim();
+      const fullFallback = pick(data, ['fullName', 'fullname', 'name', 'displayName']) || '';
+      const email = pick(data, ['email', 'emailId', 'profile.email', 'user.email']) || '';
+      const _role = pick(data, ['role', 'userType', 'type']) || '';
+      let qual: any = pick(
+        data,
+        [
+          'qualification',
+          'highestQualification',
+          'education',
+          'degree',
+          'qualifications',
+          'profile.qualification',
+          'profile.qualifications',
+          'education.qualification',
+          'education.qualifications',
+          'academics.qualification',
+        ]
+      );
+      if (Array.isArray(qual)) qual = qual.join(', ');
+      const avatar = pick(data, ['avatarUrl', 'photoUrl', 'imageUrl', 'profilePicture']);
+      setFormData((s) => ({
+        ...s,
+        userName: full || fullFallback || pick(data, ['username']) || (email?.includes('@') ? email.split('@')[0] : s.userName),
+        userEmail: email || s.userEmail,
+        role: _role || s.role,
+        qualification: qual || s.qualification,
+        profilePicture: avatar || s.profilePicture,
+      }));
+    };
+
+    const run = async () => {
+      setLoading(true);
+      setApiError(null);
+      try {
+        let res: any | null = null;
+        try { res = await getJSON('/user/me'); } catch {}
+        if (!res) {
+          // optional fallback if needed
+          try { res = await getJSON('/user/register'); } catch {}
+        }
+        if (res) mapUser(res);
+      } catch (e: any) {
+        setApiError(e?.message || 'Failed to fetch profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, []);
+
   const handleSave = () => {
-    onSaveProfile(formData);
+    onSaveProfile?.(formData);
+    try { localStorage.setItem('teacherProfile', JSON.stringify(formData)); } catch {}
     setIsEditMode(false);
   };
 
   const handleCancel = () => {
-    setFormData({ userName, userEmail, learningGoal, profilePicture: profilePicture || '' });
+    setFormData({
+      userName: userName || '',
+      userEmail: userEmail || '',
+      role: role || '',
+      qualification: qualification || '',
+      profilePicture: profilePicture || '',
+    });
     setIsEditMode(false);
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        className="bg-gradient-to-r from-accent/20 via-accent-light/20 to-accent/10 rounded-2xl p-6 sm:p-8 border border-accent/30 relative overflow-hidden"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <motion.div
-          className="absolute inset-0 bg-gradient-radial from-accent/10 via-transparent to-transparent opacity-40 pointer-events-none"
-          animate={{ opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
+      <motion.div className="bg-gradient-to-r from-accent/20 via-accent-light/20 to-accent/10 rounded-2xl p-6 sm:p-8 border border-accent/30 relative overflow-hidden" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <motion.div className="absolute inset-0 bg-gradient-radial from-accent/10 via-transparent to-transparent opacity-40 pointer-events-none" animate={{ opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} />
         <div className="flex items-center justify-between relative z-10">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile Settings</h1>
-            <p className="text-gray-300">Manage your account information</p>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile</h1>
+            <p className="text-gray-300">Teacher account details</p>
           </div>
           <UserCircle2 className="w-12 h-12 text-accent" />
         </div>
       </motion.div>
 
-      {/* Appearance Section */}
-      <div className="bg-dark-secondary rounded-xl p-6 border border-gray-800">
-        <h2 className="text-xl font-bold mb-6">Appearance</h2>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-400 mb-3 block">Theme</label>
-            <p className="text-xs text-blue-400 mb-3">Choose between light and dark mode</p>
-            <div className="flex gap-3">
-              <motion.button
-                onClick={() => setTheme('light')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-                  theme === 'light'
-                    ? 'bg-accent/20 border-accent text-accent'
-                    : 'bg-dark-tertiary border-gray-700 text-gray-400 hover:border-accent/50'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Sun className="w-4 h-4" />
-                <span className="text-sm font-medium">Light</span>
-              </motion.button>
-              <motion.button
-                onClick={() => setTheme('dark')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-                  theme === 'dark'
-                    ? 'bg-accent/20 border-accent text-accent'
-                    : 'bg-dark-tertiary border-gray-700 text-gray-400 hover:border-accent/50'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Moon className="w-4 h-4" />
-                <span className="text-sm font-medium">Dark</span>
-              </motion.button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Error/Loading */}
+      {apiError && <div className="text-sm text-red-400">{apiError}</div>}
+      {loading && <div className="text-sm text-gray-400">Loading profile…</div>}
 
       {/* Profile Information Section */}
       <div className="bg-dark-secondary rounded-xl p-6 border border-gray-800">
@@ -133,50 +149,64 @@ export default function ProfilePage({
         </div>
 
         <div className="space-y-6">
-          {/* Profile Picture */}
+          {/* Profile Picture with Upload + Capture */}
           <div>
             <label className="text-sm font-medium text-gray-400 mb-3 block">Profile Picture</label>
-            {isEditMode ? (
-              <div>
-                <p className="text-xs text-gray-500 mb-4">Choose from predefined avatars</p>
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 mb-4">
-                  <button
-                    onClick={() => setFormData({ ...formData, profilePicture: '' })}
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-2 transition-all ${
-                      !formData.profilePicture
-                        ? 'bg-accent/20 border-accent'
-                        : 'bg-dark-tertiary border-gray-700 hover:border-accent/50'
-                    }`}
-                  >
-                    <User className="w-6 h-6 text-gray-400" />
-                  </button>
-                  {avatars.map((avatar, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setFormData({ ...formData, profilePicture: avatar })}
-                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 transition-all overflow-hidden ${
-                        formData.profilePicture === avatar
-                          ? 'border-accent scale-110'
-                          : 'border-gray-700 hover:border-accent/50 hover:scale-105'
-                      }`}
-                    >
-                      <img src={avatar} alt={`Avatar ${index + 1}`} className="w-full h-full" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
+            <div className="flex items-start gap-4">
               <div className="w-20 h-20 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center text-dark-primary font-bold text-2xl overflow-hidden">
                 {formData.profilePicture ? (
-                  <img src={formData.profilePicture} alt="Profile" className="w-full h-full" />
+                  <img src={formData.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  userName.charAt(0).toUpperCase()
+                  (formData.userName || 'U').charAt(0).toUpperCase()
                 )}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 rounded-md bg-accent text-dark-primary text-sm font-semibold">Upload Photo</button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !file.type.startsWith('image/')) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setFormData({ ...formData, profilePicture: String(reader.result || '') });
+                  reader.readAsDataURL(file);
+                }} />
+                <button onClick={async () => {
+                  if (cameraActive) { // stop
+                    const s = streamRef.current; if (s) s.getTracks().forEach(t => t.stop());
+                    if (videoRef.current) videoRef.current.srcObject = null; setCameraActive(false); return;
+                  }
+                  try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play(); }
+                    streamRef.current = stream; setCameraActive(true);
+                  } catch {
+                    setApiError('Camera access denied or unavailable');
+                  }
+                }} className="px-4 py-2 rounded-md bg-dark-tertiary text-sm border border-gray-700 hover:border-accent">{cameraActive ? 'Stop Camera' : 'Capture Photo'}</button>
+                {formData.profilePicture && (
+                  <button onClick={() => setFormData({ ...formData, profilePicture: '' })} className="px-4 py-2 rounded-md bg-dark-tertiary text-sm border border-gray-700 hover:border-accent">Remove Photo</button>
+                )}
+              </div>
+            </div>
+
+            {cameraActive && (
+              <div className="mt-3 flex items-start gap-3">
+                <video ref={videoRef} className="w-56 h-40 bg-black rounded-lg border border-gray-800" />
+                <button onClick={() => {
+                  const video = videoRef.current; if (!video) return;
+                  const canvas = document.createElement('canvas');
+                  canvas.width = video.videoWidth || 256; canvas.height = video.videoHeight || 256;
+                  const ctx = canvas.getContext('2d'); if (!ctx) return;
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  const dataUrl = canvas.toDataURL('image/png');
+                  setFormData({ ...formData, profilePicture: dataUrl });
+                  const s = streamRef.current; if (s) s.getTracks().forEach(t => t.stop());
+                  if (videoRef.current) videoRef.current.srcObject = null; setCameraActive(false);
+                }} className="px-4 py-2 rounded-md bg-accent text-dark-primary text-sm font-semibold">Take Snapshot</button>
               </div>
             )}
           </div>
 
-          {/* Full Name */}
+          {/* Full Name (editable) */}
           <div>
             <label className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -195,48 +225,28 @@ export default function ProfilePage({
             )}
           </div>
 
-          {/* Email Address */}
+          {/* Email Address (read-only) */}
           <div>
             <label className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
               <Mail className="w-4 h-4" />
               Email Address
             </label>
-            {isEditMode ? (
-              <>
-                <input
-                  type="email"
-                  value={formData.userEmail}
-                  onChange={(e) => setFormData({ ...formData, userEmail: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:outline-none focus:border-accent transition-colors text-white"
-                  placeholder="Enter your email"
-                />
-                <p className="text-xs text-gray-500 mt-2">Email address cannot be changed</p>
-              </>
-            ) : (
-              <>
-                <div className="px-4 py-3 bg-dark-tertiary rounded-lg text-gray-300">{formData.userEmail}</div>
-                <p className="text-xs text-gray-500 mt-2">Email address cannot be changed</p>
-              </>
-            )}
+            <>
+              <div className="px-4 py-3 bg-dark-tertiary rounded-lg text-gray-300">{formData.userEmail}</div>
+              <p className="text-xs text-gray-500 mt-2">Email address cannot be changed</p>
+            </>
           </div>
 
-          {/* Learning Goal */}
+          {/* Role (read-only) */}
           <div>
-            <label className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Learning Goal
-            </label>
-            {isEditMode ? (
-              <input
-                type="text"
-                value={formData.learningGoal}
-                onChange={(e) => setFormData({ ...formData, learningGoal: e.target.value })}
-                className="w-full px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:outline-none focus:border-accent transition-colors text-white"
-                placeholder="e.g., I want to become a Software Developer"
-              />
-            ) : (
-              <div className="px-4 py-3 bg-dark-tertiary rounded-lg text-gray-300">{formData.learningGoal}</div>
-            )}
+            <label className="text-sm font-medium text-gray-400 mb-2">Role</label>
+            <div className="px-4 py-3 bg-dark-tertiary rounded-lg text-gray-300">{formData.role || '—'}</div>
+          </div>
+
+          {/* Qualification (read-only) */}
+          <div>
+            <label className="text-sm font-medium text-gray-400 mb-2">Qualification</label>
+            <div className="px-4 py-3 bg-dark-tertiary rounded-lg text-gray-300">{formData.qualification || '—'}</div>
           </div>
 
           {/* Action Buttons */}
@@ -262,29 +272,6 @@ export default function ProfilePage({
               </motion.button>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Account Statistics */}
-      <div className="bg-dark-secondary rounded-xl p-6 border border-gray-800">
-        <h2 className="text-xl font-bold mb-6">Account Statistics</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-dark-tertiary rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-accent mb-1">{totalWeeks}</div>
-            <div className="text-sm text-gray-400">Total Weeks</div>
-          </div>
-          <div className="bg-dark-tertiary rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-blue-400 mb-1">{totalLessons}</div>
-            <div className="text-sm text-gray-400">Total Lessons</div>
-          </div>
-          <div className="bg-dark-tertiary rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-green-400 mb-1">{lessonsCompleted}</div>
-            <div className="text-sm text-gray-400">Lessons Completed</div>
-          </div>
-          <div className="bg-dark-tertiary rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-purple-400 mb-1">{studyTimeHours}h</div>
-            <div className="text-sm text-gray-400">Hours Studied</div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../utils/auth';
 import ContentGenerator from './TeacherDashboard/ContentGenerator';
 import MaterialBase from './TeacherDashboard/MaterialBase';
 import KnowledgeBase from './TeacherDashboard/KnowledgeBase';
@@ -10,6 +11,7 @@ import SavedWorkList, { type SavedItem } from './TeacherDashboard/SavedWork.tsx'
 import Profile from './TeacherDashboard/Profile';
 
 export default function TeacherDashboard() {
+  const { logout } = useAuth();
   const [activeView, setActiveView] = useState<'welcome' | 'content-generator' | 'material-base' | 'knowledge-base' | 'visual-aid' | 'lesson-planner' | 'game-generator' | 'saved-work' | 'profile'>('welcome');
   const [institutionType, setInstitutionType] = useState<'school' | 'college'>('school');
 
@@ -139,29 +141,6 @@ export default function TeacherDashboard() {
 
             {/* Desktop controls */}
             <div className="hidden md:flex items-center gap-4">
-              <div className="flex gap-2 bg-dark-tertiary rounded-lg p-1">
-                <button
-                  onClick={() => setInstitutionType('school')}
-                  className={`px-4 py-2 rounded-md transition-all text-sm font-semibold ${
-                    institutionType === 'school'
-                      ? 'bg-accent text-dark-primary'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  School
-                </button>
-                <button
-                  onClick={() => setInstitutionType('college')}
-                  className={`px-4 py-2 rounded-md transition-all text-sm font-semibold ${
-                    institutionType === 'college'
-                      ? 'bg-accent text-dark-primary'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  College
-                </button>
-              </div>
-
               <button
                 onClick={() => setActiveView('saved-work')}
                 className="px-3 py-2 rounded-md bg-dark-tertiary text-sm text-gray-300 hover:bg-dark-tertiary/80 transition-colors"
@@ -176,6 +155,14 @@ export default function TeacherDashboard() {
                 title="Profile"
               >
                 {teacherName.charAt(0)}
+              </button>
+
+              <button
+                onClick={() => { try { logout(); } finally { window.location.href = '/'; } }}
+                className="px-3 py-2 rounded-md bg-red-500/20 text-sm text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                title="Logout"
+              >
+                Logout
               </button>
             </div>
 
@@ -199,24 +186,6 @@ export default function TeacherDashboard() {
                     <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white">✕</button>
                   </div>
                   <div className="p-3 space-y-3">
-                    <div>
-                      <div className="text-xs uppercase text-gray-500 mb-2">Institution</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => { setInstitutionType('school'); setIsMenuOpen(false); }}
-                          className={`px-3 py-2 rounded-md text-sm font-semibold ${institutionType === 'school' ? 'bg-accent text-dark-primary' : 'bg-dark-tertiary border border-gray-700 text-gray-300'}`}
-                        >
-                          School
-                        </button>
-                        <button
-                          onClick={() => { setInstitutionType('college'); setIsMenuOpen(false); }}
-                          className={`px-3 py-2 rounded-md text-sm font-semibold ${institutionType === 'college' ? 'bg-accent text-dark-primary' : 'bg-dark-tertiary border border-gray-700 text-gray-300'}`}
-                        >
-                          College
-                        </button>
-                      </div>
-                    </div>
-
                     <button
                       onClick={() => { setActiveView('saved-work'); setIsMenuOpen(false); }}
                       className="w-full px-3 py-2 rounded-md bg-dark-tertiary text-sm text-gray-200 hover:bg-dark-tertiary/80 transition-colors flex items-center gap-2"
@@ -229,6 +198,13 @@ export default function TeacherDashboard() {
                       className="w-full px-3 py-2 rounded-md bg-gradient-to-br from-accent to-accent-light text-sm text-dark-primary font-semibold"
                     >
                       Profile ({teacherName})
+                    </button>
+
+                    <button
+                      onClick={() => { setIsMenuOpen(false); try { logout(); } finally { window.location.href = '/'; } }}
+                      className="w-full px-3 py-2 rounded-md text-sm bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                    >
+                      Logout
                     </button>
                   </div>
                 </div>
