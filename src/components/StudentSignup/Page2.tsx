@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import FaceCaptureModal from '../FaceCaptureModal';
 import type { Page2Data } from '../StudentSignup';
 
 interface Page2Props {
@@ -20,6 +21,7 @@ export default function StudentSignupPage2({ email, onBack, onNext }: Page2Props
   const [photoUrl, setPhotoUrl] = useState('');
   const [showNameNote, setShowNameNote] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,7 +115,16 @@ export default function StudentSignupPage2({ email, onBack, onNext }: Page2Props
                 <span className="text-xl">+</span>
               </label>
             </div>
-            <p className="text-sm text-gray-400">Upload your photo</p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-gray-400">Upload or capture your photo</p>
+              <button
+                type="button"
+                onClick={() => setIsCameraOpen(true)}
+                className="px-3 py-1.5 text-sm rounded-lg bg-gray-700 hover:bg-gray-600 text-white"
+              >
+                Use Camera
+              </button>
+            </div>
           </div>
 
           <div className="bg-dark-tertiary border border-gray-700 rounded-lg p-4 mb-6">
@@ -266,6 +277,14 @@ export default function StudentSignupPage2({ email, onBack, onNext }: Page2Props
           </button>
         </form>
       </div>
+      {isCameraOpen && (
+        <FaceCaptureModal
+          isOpen={isCameraOpen}
+          onClose={() => setIsCameraOpen(false)}
+          onCaptured={(url) => { setPhotoUrl(url); setIsCameraOpen(false); }}
+          title="Student Photo Capture"
+        />
+      )}
     </div>
   );
 }

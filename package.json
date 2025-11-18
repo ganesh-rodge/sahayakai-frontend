@@ -16,6 +16,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
+    "face-api.js": "^0.22.2",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.553.0",
     "react": "^19.2.0",
