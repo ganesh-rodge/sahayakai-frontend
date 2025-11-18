@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import FaceCaptureModal from '../FaceCaptureModal';
+import StepHeader from '../Signup/StepHeader';
 import type { Page2Data } from '../StudentSignup';
 
 interface Page2Props {
@@ -74,26 +75,8 @@ export default function StudentSignupPage2({ email, onBack: _onBack, onNext }: P
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
-      
-
       <div className="max-w-2xl w-full">
-        <div className="text-center mb-8">
-          <div className="flex items-center gap-2 justify-center mb-4">
-            <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-10 w-auto" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Personal Details</h1>
-          <p className="text-gray-400">Step 2 of 3: Tell us about yourself</p>
-        </div>
-
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-accent/30 text-white flex items-center justify-center font-bold">✓</div>
-            <div className="w-16 h-1 bg-accent"></div>
-            <div className="w-8 h-8 rounded-full bg-accent text-dark-primary flex items-center justify-center font-bold">2</div>
-            <div className="w-16 h-1 bg-gray-700"></div>
-            <div className="w-8 h-8 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold">3</div>
-          </div>
-        </div>
+        <StepHeader title="Personal Details" subtitle="Step 2 of 3: Tell us about yourself" current={2} total={3} />
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-dark-secondary p-8 rounded-lg border border-gray-800">
           <div className="flex flex-col items-center mb-6">

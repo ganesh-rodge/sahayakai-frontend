@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { TeacherPage4Data } from '../TeacherSignup';
+import StepHeader from '../Signup/StepHeader';
 import { INDIAN_COLLEGES } from '../../utils/indianColleges';
 
 interface Page4Props {
@@ -144,28 +145,8 @@ export default function TeacherSignupPage4({ onBack: _onBack, onComplete }: Page
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
-      
-
       <div className="max-w-3xl w-full">
-        <div className="text-center mb-8">
-            <div className="flex items-center gap-2 justify-center mb-4">
-            <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-10 w-auto" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">School/College Details</h1>
-          <p className="text-gray-400">Step 4 of 4: Complete your profile</p>
-        </div>
-
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-1">
-            <div className="w-8 h-8 rounded-full bg-accent/30 text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div className="w-12 h-1 bg-accent"></div>
-            <div className="w-8 h-8 rounded-full bg-accent/30 text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div className="w-12 h-1 bg-accent"></div>
-            <div className="w-8 h-8 rounded-full bg-accent/30 text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div className="w-12 h-1 bg-accent"></div>
-            <div className="w-8 h-8 rounded-full bg-accent text-dark-primary flex items-center justify-center font-bold text-sm">4</div>
-          </div>
-        </div>
+        <StepHeader title="School/College Details" subtitle="Step 4 of 4: Complete your profile" current={4} total={4} />
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-dark-secondary p-8 rounded-lg border border-gray-800">
           <div>

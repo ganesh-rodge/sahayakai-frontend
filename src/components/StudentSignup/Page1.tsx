@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { postJSON } from '../../utils/api';
 import type { Page1Data } from '../StudentSignup';
+import StepHeader from '../Signup/StepHeader';
 
 interface Page1Props {
   onBack: () => void;
@@ -132,28 +133,15 @@ export default function StudentSignupPage1({ onBack: _onBack, onLogin, onNext }:
 
   const passwordStrength = getPasswordStrength();
 
+  const isEmailValid = validateEmail(email);
+  const isUsernameValid = /^[a-zA-Z0-9_]{3,20}$/.test(username || '');
+  const isPasswordValid = validatePassword(password || '');
+  const canContinue = isUsernameValid && isEmailValid && isPasswordValid && otpVerified;
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 animate-fadeIn">
-      
-
       <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="flex items-center gap-2 justify-center mb-4">
-            <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-10 w-auto" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Create Student Account</h1>
-          <p className="text-gray-400">Step 1 of 3: Account Information</p>
-        </div>
-
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-accent text-dark-primary flex items-center justify-center font-bold">1</div>
-            <div className="w-16 h-1 bg-gray-700"></div>
-            <div className="w-8 h-8 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold">2</div>
-            <div className="w-16 h-1 bg-gray-700"></div>
-            <div className="w-8 h-8 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold">3</div>
-          </div>
-        </div>
+        <StepHeader title="Create Student Account" subtitle="Step 1 of 3: Account Information" current={1} total={3} />
 
         <form onSubmit={handleSubmit} className="space-y-5 bg-dark-secondary p-8 rounded-lg border border-gray-800">
           <div>
@@ -170,33 +158,31 @@ export default function StudentSignupPage1({ onBack: _onBack, onLogin, onNext }:
 
           <div>
             <label className="block text-sm font-semibold mb-2">Email Address</label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@example.com"
-                className="flex-1 px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors min-w-0"
-                disabled={otpSent}
-              />
-              <div className="grid grid-cols-1 sm:auto-cols-max sm:grid-flow-col gap-2 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={handleSendOtp}
-                  disabled={otpSent || isLoading}
-                  className="px-6 py-3 bg-accent/20 text-accent border border-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
-                >
-                  {isLoading && !otpVerified ? 'Sending…' : otpSent ? 'OTP Sent' : 'Send OTP'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleVerifyOtp}
-                  disabled={!otpSent || otpVerified || isLoading}
-                  className="px-6 py-3 bg-dark-tertiary text-white border border-gray-700 rounded-lg font-semibold hover:border-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
-                >
-                  {otpVerified ? 'Verified' : 'Verify OTP'}
-                </button>
-              </div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your.email@example.com"
+              className="w-full px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors min-w-0"
+              disabled={otpSent}
+            />
+            <div className="mt-2 flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={otpSent || isLoading}
+                className="px-6 py-3 bg-accent/20 text-accent border border-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
+              >
+                {isLoading && !otpVerified ? 'Sending…' : otpSent ? 'OTP Sent' : 'Send OTP'}
+              </button>
+              <button
+                type="button"
+                onClick={handleVerifyOtp}
+                disabled={!otpSent || otpVerified || isLoading}
+                className="px-6 py-3 bg-dark-tertiary text-white border border-gray-700 rounded-lg font-semibold hover:border-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
+              >
+                {otpVerified ? 'Verified' : 'Verify OTP'}
+              </button>
             </div>
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
@@ -250,7 +236,12 @@ export default function StudentSignupPage1({ onBack: _onBack, onLogin, onNext }:
 
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all mt-6"
+            disabled={!canContinue}
+            className={`w-full px-4 py-3 rounded-lg font-semibold transition-all mt-6 ${
+              canContinue
+                ? 'bg-gradient-to-r from-accent to-accent-light text-dark-primary hover:shadow-lg hover:shadow-accent/30'
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            }`}
           >
             Continue to Personal Details
           </button>

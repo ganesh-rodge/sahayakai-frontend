@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Page3Data } from '../StudentSignup';
+import StepHeader from '../Signup/StepHeader';
 import { INDIAN_COLLEGES } from '../../utils/indianColleges';
 
 interface Page3Props {
@@ -115,26 +116,8 @@ export default function StudentSignupPage3({ onBack: _onBack, onComplete }: Page
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
-      
-
       <div className="max-w-2xl w-full">
-        <div className="text-center mb-8">
-          <div className="flex items-center gap-2 justify-center mb-4">
-            <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-10 w-auto" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Educational Details</h1>
-          <p className="text-gray-400">Step 3 of 3: Almost there!</p>
-        </div>
-
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-accent/30 text-white flex items-center justify-center font-bold">✓</div>
-            <div className="w-16 h-1 bg-accent"></div>
-            <div className="w-8 h-8 rounded-full bg-accent/30 text-white flex items-center justify-center font-bold">✓</div>
-            <div className="w-16 h-1 bg-accent"></div>
-            <div className="w-8 h-8 rounded-full bg-accent text-dark-primary flex items-center justify-center font-bold">3</div>
-          </div>
-        </div>
+        <StepHeader title="Educational Details" subtitle="Step 3 of 3: Almost there!" current={3} total={3} />
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-dark-secondary p-8 rounded-lg border border-gray-800">
           <div>
