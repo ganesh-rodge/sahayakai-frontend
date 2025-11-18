@@ -113,6 +113,7 @@ export default function ProfilePage({ userName, userEmail, role, qualification, 
       qualification: qualification || '',
       profilePicture: profilePicture || '',
     });
+    
     setIsEditMode(false);
   };
 
