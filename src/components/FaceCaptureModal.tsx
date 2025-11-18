@@ -14,12 +14,16 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const captureCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
+  const startingRef = useRef(false);
+  const lastTimeRef = useRef(0);
+  const [videoKey, setVideoKey] = useState(0);
   const [loadingModels, setLoadingModels] = useState(true);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [state, setState] = useState<DetectState>('none');
   const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [dims, setDims] = useState<{ w: number; h: number }>({ w: 640, h: 360 });
+  const maskId = useMemo(() => `hole-mask-${Math.random().toString(36).slice(2)}`, []);
 
   const borderColor = useMemo(() => {
     if (state === 'captured') return '#FACC15'; // yellow-400
@@ -34,6 +38,58 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
       v.srcObject = null;
     }
   }, []);
+
+  const waitForPlaying = useCallback((video: HTMLVideoElement) => {
+    return new Promise<void>((resolve) => {
+      if (video.readyState >= 2 && !video.paused) {
+        resolve();
+        return;
+      }
+      const cleanup = () => {
+        video.removeEventListener('playing', onPlaying);
+        video.removeEventListener('canplay', onPlaying);
+        video.removeEventListener('loadedmetadata', onPlaying);
+      };
+      const onPlaying = () => {
+        cleanup();
+        resolve();
+      };
+      video.addEventListener('playing', onPlaying, { once: true });
+      video.addEventListener('canplay', onPlaying, { once: true });
+      video.addEventListener('loadedmetadata', onPlaying, { once: true });
+    });
+  }, []);
+
+  const ensureCamera = useCallback(async () => {
+    if (startingRef.current) return;
+    const v = videoRef.current;
+    if (!v) return;
+    try {
+      setRunning(false);
+      const hasLive = !!v.srcObject && (v.srcObject as MediaStream).getTracks().some(t => t.readyState === 'live');
+      if (!hasLive) {
+        startingRef.current = true;
+        // stop any stale tracks to be safe
+        if (v.srcObject) (v.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+        v.srcObject = null;
+        await new Promise(r => requestAnimationFrame(() => r(undefined)));
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        v.srcObject = stream;
+        await v.play();
+        await waitForPlaying(v);
+        setRunning(true);
+      } else {
+        await v.play();
+        await waitForPlaying(v);
+        setRunning(true);
+      }
+    } catch (err: any) {
+      console.error('ensureCamera error', err);
+      setStreamError(err?.message ?? 'Unable to access camera');
+    } finally {
+      startingRef.current = false;
+    }
+  }, [waitForPlaying]);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,22 +161,35 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
     let raf = 0;
     const v = videoRef.current;
     if (!running || !v) return;
-    const opt = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+      const opt = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
     const loop = async () => {
-      if (!v || v.readyState < 2) { raf = requestAnimationFrame(loop); return; }
+      if (!v) { raf = requestAnimationFrame(loop); return; }
+      const stream = v.srcObject as MediaStream | null;
+      const live = !!stream && stream.getVideoTracks().some(t => t.readyState === 'live');
+      const dimsOk = (v.videoWidth ?? 0) > 0 && (v.videoHeight ?? 0) > 0;
+      const advanced = v.currentTime > lastTimeRef.current;
+      lastTimeRef.current = v.currentTime;
+      if (v.readyState < 2 || !live || !dimsOk || !advanced) { 
+        setState(prev => (prev === 'captured' ? 'captured' : 'none'));
+        raf = requestAnimationFrame(loop); 
+        return; 
+      }
       try {
-        const det = await faceapi.detectSingleFace(v, opt);
-        const vw = v.clientWidth || v.videoWidth || 640;
-        const vh = v.clientHeight || v.videoHeight || 480;
-        const cx = vw / 2; const cy = vh / 2;
-        const base = Math.min(vw, vh) * 0.6;
-        const diameter = Math.max(180, Math.min(420, base));
-        const radius = diameter / 2;
+          const det = await faceapi.detectSingleFace(v, opt);
+          const displayW = dims.w; const displayH = dims.h;
+          const videoW = v.videoWidth || 640; const videoH = v.videoHeight || 480;
+          const base = Math.min(displayW, displayH) * 0.7;
+          const diameterDisplay = Math.max(180, Math.min(480, base));
+          const radiusDisplay = diameterDisplay / 2;
+          // Map circle to video coordinate space (object-cover scale)
+          const scale = Math.max(displayW / videoW, displayH / videoH);
+          const radiusVideo = radiusDisplay / scale;
+          const cxVid = videoW / 2; const cyVid = videoH / 2;
         if (det) {
           const { x, y, width, height } = det.box;
           const fx = x + width / 2; const fy = y + height / 2;
-          const dx = fx - cx; const dy = fy - cy;
-          const inCircle = (dx * dx + dy * dy) <= (radius * radius);
+          const dx = fx - cxVid; const dy = fy - cyVid;
+          const inCircle = (dx * dx + dy * dy) <= (radiusVideo * radiusVideo);
           setState(prev => (prev === 'captured' ? 'captured' : (inCircle ? 'ready' : 'none')));
         } else {
           setState(prev => (prev === 'captured' ? 'captured' : 'none'));
@@ -157,10 +226,16 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
     }
   }, [capturedUrl, onCaptured, onClose]);
 
-  const handleRetake = useCallback(() => {
+  const handleRetake = useCallback(async () => {
     setCapturedUrl(null);
     setState('none');
-  }, []);
+    stopStream();
+    // Remount video element and reacquire camera
+    setVideoKey(k => k + 1);
+    // wait one frame so ref updates to the new element
+    await new Promise(r => requestAnimationFrame(() => r(undefined)));
+    await ensureCamera();
+  }, [ensureCamera]);
 
   if (!isOpen) return null;
 
@@ -179,22 +254,23 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
         <div ref={frameRef} className="relative flex items-center justify-center bg-black sm:rounded-lg overflow-hidden aspect-video w-full">
           {!capturedUrl ? (
             <>
-              <video ref={videoRef} playsInline muted className="w-full h-full object-cover" />
+              <video key={videoKey} ref={videoRef} playsInline autoPlay muted className="w-full h-full object-cover" />
               <svg className="pointer-events-none absolute inset-0 w-full h-full" viewBox={`0 0 ${dims.w} ${dims.h}`}>
                 {(() => {
                   const vw = dims.w; const vh = dims.h;
-                  const base = Math.min(vw, vh) * 0.6;
-                  const diameter = Math.max(180, Math.min(420, base));
+                  // Keep overlay circle size in sync with detection
+                  const base = Math.min(vw, vh) * 0.7;
+                  const diameter = Math.max(180, Math.min(480, base));
                   const r = diameter / 2; const cx = vw / 2; const cy = vh / 2;
                   return (
                     <>
                       <defs>
-                        <mask id="hole-mask">
+                        <mask id={maskId} maskUnits="userSpaceOnUse">
                           <rect x="0" y="0" width={vw} height={vh} fill="white" />
                           <circle cx={cx} cy={cy} r={r} fill="black" />
                         </mask>
                       </defs>
-                      <rect x="0" y="0" width={vw} height={vh} fill="rgba(0,0,0,0.45)" mask="url(#hole-mask)" />
+                      <rect x="0" y="0" width={vw} height={vh} fill="rgba(0,0,0,0.45)" mask={`url(#${maskId})`} />
                       <circle cx={cx} cy={cy} r={r} fill="none" stroke={borderColor} strokeWidth={Math.max(3, Math.min(6, r * 0.04))} />
                     </>
                   );
