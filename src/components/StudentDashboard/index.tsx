@@ -287,13 +287,16 @@ export default function StudentDashboard({ onLogout }: StudentDashboardProps) {
   const handleSaveProfile = (data: {
     userName: string;
     userEmail: string;
-    learningGoal: string;
+    role?: string;
+    qualification?: string;
     profilePicture?: string;
   }) => {
     setUserData(prev => ({
-      ...data,
-      profilePicture: data.profilePicture || 'https://avatar.iran.liara.run/public/boy',
-      weeksNeeded: (prev as any).weeksNeeded || 0,
+      ...prev,
+      userName: data.userName,
+      userEmail: data.userEmail,
+      profilePicture: data.profilePicture || prev.profilePicture || 'https://avatar.iran.liara.run/public/boy',
+      weeksNeeded: prev.weeksNeeded || 0,
     }));
   };
 
@@ -361,12 +364,7 @@ export default function StudentDashboard({ onLogout }: StudentDashboardProps) {
           <ProfilePage
             userName={userData.userName}
             userEmail={userData.userEmail}
-            learningGoal={userData.learningGoal}
             profilePicture={userData.profilePicture}
-            totalWeeks={weeksData.length}
-            totalLessons={totalLessons}
-            lessonsCompleted={lessonsCompleted}
-            studyTimeHours={studyTimeHours}
             onSaveProfile={handleSaveProfile}
           />
         );
