@@ -146,20 +146,20 @@ export default function StudentSignupPage1({ onBack, onLogin, onNext }: Page1Pro
 
           <div>
             <label className="block text-sm font-semibold mb-2">Email Address</label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
-                className="flex-1 px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors"
+                className="flex-1 px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors min-w-0"
                 disabled={showVerification}
               />
               <button
                 type="button"
                 onClick={handleVerifyEmail}
                 disabled={showVerification || isLoading}
-                className="px-6 py-3 bg-accent/20 text-accent border border-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="px-6 py-3 bg-accent/20 text-accent border border-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
               >
                 {isLoading ? 'Sending...' : showVerification ? 'Verified' : 'Verify'}
               </button>
