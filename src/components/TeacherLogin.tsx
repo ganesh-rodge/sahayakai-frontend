@@ -61,7 +61,7 @@ export default function TeacherLogin({ onSubmit, loading, serverError, onForgot 
       <button
         type="submit"
         disabled={loading}
-        className="w-full px-6 py-4 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-accent/30 transition-all disabled:opacity-60"
+        className="w-full px-6 py-4 bg-linear-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold text-lg shadow-sm hover:shadow-accent/30 transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-60"
       >
         {loading ? 'Logging in...' : 'Teacher Login'}
       </button>
