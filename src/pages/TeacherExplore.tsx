@@ -7,7 +7,7 @@ interface TeacherExploreProps {
   onGetStarted: () => void;
 }
 
-export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreProps) {
+export default function TeacherExplore({ onBack: _onBack, onGetStarted }: TeacherExploreProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState<ExploreFeatureData | null>(null);
 
@@ -104,12 +104,7 @@ export default function TeacherExplore({ onBack, onGetStarted }: TeacherExploreP
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0c0f12] to-[#09090f]">
       {/* subtle radial glow background */}
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-[1100px] rounded-full blur-3xl opacity-30 bg-[radial-gradient(ellipse_at_center,rgba(0,212,170,0.25),transparent_60%)]" />
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors z-50 hover:scale-110"
-      >
-        ← Back
-      </button>
+      
 
       <div className="relative max-w-7xl mx-auto px-6 py-20">
         <motion.div

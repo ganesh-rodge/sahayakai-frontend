@@ -12,7 +12,7 @@ interface Props {
   onSubmitEmail?: (email: string, role: 'student' | 'teacher') => Promise<void> | void;
 }
 
-export default function ForgotPasswordPage({ role: _role, onBack }: Props) {
+export default function ForgotPasswordPage({ role: _role, onBack: _onBack }: Props) {
   const [step, setStep] = useState<'email' | 'verify' | 'done'>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -142,12 +142,7 @@ export default function ForgotPasswordPage({ role: _role, onBack }: Props) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors z-50 hover:scale-110 font-medium"
-      >
-        ← Back
-      </button>
+      
 
       <div className="flex-1 flex items-center justify-center p-8 md:p-12">
         <motion.div

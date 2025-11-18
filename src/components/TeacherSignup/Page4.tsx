@@ -12,7 +12,7 @@ const COLLEGE_STREAMS = ['Science', 'Commerce', 'Arts', 'Engineering'];
 const BRANCHES = ['Computer Science', 'Mechanical', 'Electrical', 'Civil', 'Electronics', 'Information Technology', 'Biotechnology'];
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
 
-export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
+export default function TeacherSignupPage4({ onBack: _onBack, onComplete }: Page4Props) {
   const [institutionType, setInstitutionType] = useState('');
   const [institutionName, setInstitutionName] = useState('');
   const [institutionNameOther, setInstitutionNameOther] = useState('');
@@ -144,12 +144,7 @@ export default function TeacherSignupPage4({ onBack, onComplete }: Page4Props) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors hover:scale-110"
-      >
-        ← Back
-      </button>
+      
 
       <div className="max-w-3xl w-full">
         <div className="text-center mb-8">

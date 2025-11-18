@@ -26,7 +26,7 @@ const SCHOOL_STREAMS = {
 const COLLEGE_YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
 const COLLEGE_SEMESTERS = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8', 'Semester 9', 'Semester 10'];
 
-export default function StudentSignupPage3({ onBack, onComplete }: Page3Props) {
+export default function StudentSignupPage3({ onBack: _onBack, onComplete }: Page3Props) {
   const [educationLevel, setEducationLevel] = useState('');
   const [classGrade, setClassGrade] = useState('');
   const [institutionName, setInstitutionName] = useState('');
@@ -115,12 +115,7 @@ export default function StudentSignupPage3({ onBack, onComplete }: Page3Props) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors hover:scale-110"
-      >
-        ← Back
-      </button>
+      
 
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">

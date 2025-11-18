@@ -10,7 +10,7 @@ interface Props {
   onForgot?: () => void;
 }
 
-export default function LoginStudentPage({ onBack, onLogin, onSignup, loading, error, onForgot }: Props) {
+export default function LoginStudentPage({ onBack: _onBack, onLogin, onSignup, loading, error, onForgot }: Props) {
   return (
     <motion.div
       className="min-h-screen bg-dark-primary flex flex-col"
@@ -18,12 +18,7 @@ export default function LoginStudentPage({ onBack, onLogin, onSignup, loading, e
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors z-50 hover:scale-110 font-medium"
-      >
-        ← Back
-      </button>
+      
 
       <div className="flex-1 flex items-center justify-center p-8 md:p-12">
         <motion.div

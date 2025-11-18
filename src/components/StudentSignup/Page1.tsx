@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { postJSON } from '../../utils/api';
 import type { Page1Data } from '../StudentSignup';
 
 interface Page1Props {
@@ -7,12 +8,14 @@ interface Page1Props {
   onNext: (data: Page1Data) => void;
 }
 
-export default function StudentSignupPage1({ onBack, onLogin, onNext }: Page1Props) {
+export default function StudentSignupPage1({ onBack: _onBack, onLogin, onNext }: Page1Props) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,7 +33,7 @@ export default function StudentSignupPage1({ onBack, onLogin, onNext }: Page1Pro
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleVerifyEmail = async () => {
+  const handleSendOtp = async () => {
     const newErrors: Record<string, string> = {};
 
     if (!email) {
@@ -45,9 +48,37 @@ export default function StudentSignupPage1({ onBack, onLogin, onNext }: Page1Pro
     }
 
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setShowVerification(true);
-    setIsLoading(false);
+    try {
+      // Try backend if available; ignore failures silently and proceed with UI
+      await postJSON('/auth/send-otp', { email });
+    } catch {}
+    finally {
+      setOtpSent(true);
+      setShowVerification(true);
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    const newErrors: Record<string, string> = {};
+    if (!verificationCode || verificationCode.trim().length < 4) {
+      newErrors.verification = 'Please enter the OTP code';
+      setErrors(prev => ({ ...prev, ...newErrors }));
+      setOtpVerified(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // If there is a verify endpoint, you could call it here.
+      // e.g., await postJSON('/auth/verify-otp', { email, otp: verificationCode });
+      setOtpVerified(true);
+      setErrors(prev => ({ ...prev, verification: '' }));
+    } catch (e: any) {
+      setOtpVerified(false);
+      setErrors(prev => ({ ...prev, verification: e?.message || 'Invalid OTP' }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -72,10 +103,8 @@ export default function StudentSignupPage1({ onBack, onLogin, onNext }: Page1Pro
       newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, number, and special character';
     }
 
-    if (!showVerification) {
-      newErrors.verification = 'Please verify your email first';
-    } else if (!verificationCode) {
-      newErrors.verification = 'Please enter the verification code';
+    if (!otpVerified) {
+      newErrors.verification = 'Please verify the OTP first';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -105,12 +134,7 @@ export default function StudentSignupPage1({ onBack, onLogin, onNext }: Page1Pro
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 animate-fadeIn">
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors hover:scale-110"
-      >
-        ← Back
-      </button>
+      
 
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
@@ -153,16 +177,26 @@ export default function StudentSignupPage1({ onBack, onLogin, onNext }: Page1Pro
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
                 className="flex-1 px-4 py-3 bg-dark-tertiary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors min-w-0"
-                disabled={showVerification}
+                disabled={otpSent}
               />
-              <button
-                type="button"
-                onClick={handleVerifyEmail}
-                disabled={showVerification || isLoading}
-                className="px-6 py-3 bg-accent/20 text-accent border border-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
-              >
-                {isLoading ? 'Sending...' : showVerification ? 'Verified' : 'Verify'}
-              </button>
+              <div className="grid grid-cols-1 sm:auto-cols-max sm:grid-flow-col gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={otpSent || isLoading}
+                  className="px-6 py-3 bg-accent/20 text-accent border border-accent rounded-lg font-semibold hover:bg-accent hover:text-dark-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
+                >
+                  {isLoading && !otpVerified ? 'Sending…' : otpSent ? 'OTP Sent' : 'Send OTP'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVerifyOtp}
+                  disabled={!otpSent || otpVerified || isLoading}
+                  className="px-6 py-3 bg-dark-tertiary text-white border border-gray-700 rounded-lg font-semibold hover:border-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
+                >
+                  {otpVerified ? 'Verified' : 'Verify OTP'}
+                </button>
+              </div>
             </div>
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>

@@ -21,7 +21,7 @@ const CONTENT_TYPES = [
 
 const GRADES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
-export default function ContentGenerator({ onBack, onSave }: ContentGeneratorProps) {
+export default function ContentGenerator({ onBack: _onBack, onSave }: ContentGeneratorProps) {
   const [savedMsg, setSavedMsg] = useState('');
   const [language, setLanguage] = useState('');
   const [contentType, setContentType] = useState('');
@@ -104,12 +104,6 @@ export default function ContentGenerator({ onBack, onSave }: ContentGeneratorPro
     <div className="animate-fadeIn">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2"
-          >
-            ← Back to Dashboard
-          </button>
           <h2 className="text-3xl font-bold">Content Generator</h2>
           <p className="text-gray-400 mt-2">Create engaging educational content for your students</p>
         </div>

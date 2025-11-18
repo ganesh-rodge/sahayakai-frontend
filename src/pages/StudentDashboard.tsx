@@ -1,8 +1,7 @@
 interface StudentDashboardProps {
-  onBack: () => void;
 }
 
-export default function StudentDashboard({ onBack }: StudentDashboardProps) {
+export default function StudentDashboard({}: StudentDashboardProps) {
   const studentName = 'Alex Johnson';
 
   const getGreeting = () => {
@@ -18,12 +17,7 @@ export default function StudentDashboard({ onBack }: StudentDashboardProps) {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={onBack}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                ← Back
-              </button>
+              
               <div className="flex items-center gap-2">
                 <img src="/Sahayak%20AI%20logo.png" alt="Sahayak AI" className="h-8 w-auto" />
                 <span className="font-bold text-lg">Student Dashboard</span>

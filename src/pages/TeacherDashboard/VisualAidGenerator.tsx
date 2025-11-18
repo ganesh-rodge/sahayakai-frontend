@@ -14,7 +14,7 @@ const VISUAL_AID_TYPES = [
   { id: 'timeline', label: 'Timeline', icon: '📅', description: 'Historical timelines, process timelines' }
 ];
 
-export default function VisualAidGenerator({ onBack, onSave }: VisualAidGeneratorProps) {
+export default function VisualAidGenerator({ onBack: _onBack, onSave }: VisualAidGeneratorProps) {
   const [savedMsg, setSavedMsg] = useState('');
   const [visualType, setVisualType] = useState('');
   const [description, setDescription] = useState('');
@@ -118,12 +118,6 @@ export default function VisualAidGenerator({ onBack, onSave }: VisualAidGenerato
     <div className="animate-fadeIn">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2"
-          >
-            ← Back to Dashboard
-          </button>
           <h2 className="text-3xl font-bold">Visual Aid Generator</h2>
           <p className="text-gray-400 mt-2">Create educational diagrams and visual aids for teaching</p>
         </div>

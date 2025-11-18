@@ -16,7 +16,7 @@ const GAME_TYPES = [
 
 const GRADE_LEVELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
-export default function GameGenerator({ onBack, onSave }: GameGeneratorProps) {
+export default function GameGenerator({ onBack: _onBack, onSave }: GameGeneratorProps) {
   const [savedMsg, setSavedMsg] = useState('');
   const [gameType, setGameType] = useState('');
   const [gradeLevel, setGradeLevel] = useState('');
@@ -131,9 +131,6 @@ export default function GameGenerator({ onBack, onSave }: GameGeneratorProps) {
     <div className="animate-fadeIn">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
-            ← Back to Dashboard
-          </button>
           <h2 className="text-3xl font-bold">Game Generator</h2>
           <p className="text-gray-400 mt-2">Create engaging educational games for your classroom</p>
         </div>

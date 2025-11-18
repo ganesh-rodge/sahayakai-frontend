@@ -8,7 +8,7 @@ interface Page2Props {
   onNext: (data: TeacherPage2Data) => void;
 }
 
-export default function TeacherSignupPage2({ email, onBack, onNext }: Page2Props) {
+export default function TeacherSignupPage2({ email, onBack: _onBack, onNext }: Page2Props) {
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [surname, setSurname] = useState('');
@@ -74,12 +74,7 @@ export default function TeacherSignupPage2({ email, onBack, onNext }: Page2Props
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors hover:scale-110"
-      >
-        ← Back
-      </button>
+      
 
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">

@@ -25,7 +25,7 @@ const QUALIFICATIONS = [
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 60 }, (_, i) => CURRENT_YEAR - i);
 
-export default function TeacherSignupPage3({ onBack, onNext }: Page3Props) {
+export default function TeacherSignupPage3({ onBack: _onBack, onNext }: Page3Props) {
   const [highestQualification, setHighestQualification] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
   const [university, setUniversity] = useState('');
@@ -59,12 +59,7 @@ export default function TeacherSignupPage3({ onBack, onNext }: Page3Props) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20 animate-fadeIn">
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors hover:scale-110"
-      >
-        ← Back
-      </button>
+      
 
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">

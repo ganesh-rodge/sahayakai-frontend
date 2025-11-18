@@ -38,7 +38,7 @@ const DEFAULT_PROFILE: ProfileData = {
   avatarImageDataUrl: ''
 };
 
-export default function Profile({ onBack, onSaved }: ProfileProps) {
+export default function Profile({ onBack: _onBack, onSaved }: ProfileProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -256,7 +256,6 @@ export default function Profile({ onBack, onSaved }: ProfileProps) {
 
   return (
     <div className="animate-fadeIn">
-      <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-6 flex items-center gap-2">← Back</button>
 
       <div className="bg-dark-secondary border border-gray-800 rounded-2xl p-6 md:p-8">
         {apiError && (
@@ -349,7 +348,6 @@ export default function Profile({ onBack, onSaved }: ProfileProps) {
             </label>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end">
-              <button onClick={onBack} className="px-5 py-2 rounded-md border border-gray-800 text-gray-300 hover:border-accent">Cancel</button>
               <button disabled={!dirty || saving} onClick={handleSave} className="px-6 py-2 rounded-md font-semibold text-dark-primary bg-gradient-to-r from-accent to-accent-light disabled:opacity-60">
                 {saving ? 'Saving…' : 'Save Changes'}
               </button>

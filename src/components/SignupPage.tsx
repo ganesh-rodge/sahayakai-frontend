@@ -36,13 +36,7 @@ export default function SignupPage({ onBack, onLogin, initialView }: SignupPageP
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors z-50 hover:scale-110"
-        aria-label="Go back"
-      >
-        ← Back
-      </button>
+      
 
       <motion.div
         className="max-w-6xl w-full"

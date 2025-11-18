@@ -22,7 +22,7 @@ const SAMPLE_QUESTIONS = [
   'Explain Newton\'s laws of motion'
 ];
 
-export default function KnowledgeBase({ onBack, onSave }: KnowledgeBaseProps) {
+export default function KnowledgeBase({ onBack: _onBack, onSave }: KnowledgeBaseProps) {
   const [savedMsg, setSavedMsg] = useState('');
   const [language, setLanguage] = useState('English');
   const [question, setQuestion] = useState('');
@@ -105,12 +105,6 @@ export default function KnowledgeBase({ onBack, onSave }: KnowledgeBaseProps) {
     <div className="animate-fadeIn">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2"
-          >
-            ← Back to Dashboard
-          </button>
           <h2 className="text-3xl font-bold">Knowledge Base</h2>
           <p className="text-gray-400 mt-2">Get instant AI-powered explanations for any topic</p>
         </div>

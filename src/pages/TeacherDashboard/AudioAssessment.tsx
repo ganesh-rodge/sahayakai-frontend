@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 
 interface AudioAssessmentProps {
-  onBack: () => void;
+    _onBack: () => void;
   onSave?: (payload?: any) => void;
 }
 
@@ -26,7 +26,7 @@ const SAMPLE_TEXTS: Record<string, string[]> = {
   ]
 };
 
-export default function AudioAssessment({ onBack, onSave }: AudioAssessmentProps) {
+export default function AudioAssessment({ _onBack, onSave }: AudioAssessmentProps) {
   const [language, setLanguage] = useState('English');
   const [gradeLevel, setGradeLevel] = useState('');
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'advanced'>('easy');
@@ -394,9 +394,6 @@ This assessment was conducted using AI-powered speech analysis technology. Resul
     <div className="animate-fadeIn">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">
-            ← Back to Dashboard
-          </button>
           <h2 className="text-3xl font-bold">Audio Reading Assessment</h2>
           <p className="text-gray-400 mt-2">Evaluate student reading skills using speech analysis</p>
         </div>

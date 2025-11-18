@@ -273,7 +273,6 @@ export default function TeacherDashboard() {
             {/* We'll render saved work list component file */}
             {/* Keep inline simple viewer so we don't add routing yet */}
             <div className="mb-8">
-              <button onClick={() => setActiveView('welcome')} className="text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-2">← Back to Dashboard</button>
               <h2 className="text-3xl font-bold">Saved Work</h2>
               <p className="text-gray-400 mt-2">Your saved teaching artifacts</p>
             </div>
