@@ -177,7 +177,6 @@ export default function StudentRoutes() {
 
   // Wrapper that maps auth `user` + `profile` into the existing ProfilePage props
   function ProfileWithAuth({
-    weeksData,
     onSaveProfile,
   }: {
     weeksData: Week[];
