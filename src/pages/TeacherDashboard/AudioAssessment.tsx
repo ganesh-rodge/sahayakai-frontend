@@ -37,7 +37,7 @@ export default function AudioAssessment({ onBack, onSave }: AudioAssessmentProps
   const [assessment, setAssessment] = useState('');
   const [recordingTime, setRecordingTime] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -97,7 +97,8 @@ export default function AudioAssessment({ onBack, onSave }: AudioAssessmentProps
       chunksRef.current = [];
       const mr = new MediaRecorder(stream);
       mediaRecorderRef.current = mr;
-      mr.ondataavailable = (e: BlobEvent) => {
+      // Some TS DOM lib versions may not include BlobEvent; use a minimal type.
+      mr.ondataavailable = (e: any) => {
         if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
@@ -510,7 +511,7 @@ This assessment was conducted using AI-powered speech analysis technology. Resul
               </div>
 
               {hasRecording && (
-                <button onClick={handleSubmit} disabled={isAnalyzing} className="w-full px-6 py-3 bg-gradient-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all disabled:opacity-50">
+                <button onClick={handleSubmit} disabled={isAnalyzing} className="w-full px-6 py-3 bg-linear-to-r from-accent to-accent-light text-dark-primary rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all disabled:opacity-50">
                   {isAnalyzing ? 'Analyzing Recording...' : 'Submit for Assessment'}
                 </button>
               )}
