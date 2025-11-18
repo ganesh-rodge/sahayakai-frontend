@@ -22,7 +22,7 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
   const [state, setState] = useState<DetectState>('none');
   const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
-  const [dims, setDims] = useState<{ w: number; h: number }>({ w: 640, h: 360 });
+  const [dims, setDims] = useState<{ w: number; h: number }>({ w: 540, h: 720 });
   const maskId = useMemo(() => `hole-mask-${Math.random().toString(36).slice(2)}`, []);
 
   const borderColor = useMemo(() => {
@@ -209,9 +209,34 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
     if (!v || !c) return;
     const vw = v.videoWidth || 640;
     const vh = v.videoHeight || 480;
-    c.width = vw; c.height = vh;
-    const ctx = c.getContext('2d'); if (!ctx) return;
-    ctx.drawImage(v, 0, 0, vw, vh);
+    const targetWidth = 720;
+    const targetHeight = 960;
+    const targetAspect = targetWidth / targetHeight;
+    c.width = targetWidth;
+    c.height = targetHeight;
+    const ctx = c.getContext('2d');
+    if (!ctx) return;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, targetWidth, targetHeight);
+    if (vw > 0 && vh > 0) {
+      const videoAspect = vw / vh;
+      let sx = 0;
+      let sy = 0;
+      let sWidth = vw;
+      let sHeight = vh;
+      if (videoAspect > targetAspect) {
+        sHeight = vh;
+        sWidth = sHeight * targetAspect;
+        sx = (vw - sWidth) / 2;
+      } else {
+        sWidth = vw;
+        sHeight = sWidth / targetAspect;
+        sy = (vh - sHeight) / 2;
+      }
+      ctx.drawImage(v, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+    } else {
+      ctx.drawImage(v, 0, 0, targetWidth, targetHeight);
+    }
     const dataUrl = c.toDataURL('image/jpeg', 0.9);
     setCapturedUrl(dataUrl);
     setState('captured');
@@ -251,7 +276,7 @@ export default function FaceCaptureModal({ isOpen, onClose, onCaptured, title }:
           <div className="text-sm text-red-400 mb-3 px-4 sm:px-0">{streamError}</div>
         )}
 
-        <div ref={frameRef} className="relative flex items-center justify-center bg-black sm:rounded-lg overflow-hidden aspect-video w-full">
+        <div ref={frameRef} className="relative flex items-center justify-center bg-black sm:rounded-lg overflow-hidden w-full" style={{ aspectRatio: '3 / 4' }}>
           {!capturedUrl ? (
             <>
               <video key={videoKey} ref={videoRef} playsInline autoPlay muted className="w-full h-full object-cover" />
