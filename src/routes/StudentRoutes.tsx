@@ -202,10 +202,10 @@ export default function StudentRoutes() {
     const qualification = meProfile?.qualification || meProfile?.highestQualification || '';
     const profilePicture = meProfile?.livePhoto || meProfile?.photo || userData.profilePicture || 'https://avatar.iran.liara.run/public/boy';
 
-    const totalWeeks = weeksData.length;
-    const totalLessons = weeksData.reduce((s, w) => s + w.totalLessons, 0);
-    const lessonsCompleted = weeksData.reduce((s, w) => s + w.lessonsCompleted, 0);
-    const studyTimeHours = 0;
+    // const totalWeeks = weeksData.length;
+    // const totalLessons = weeksData.reduce((s, w) => s + w.totalLessons, 0);
+    // const lessonsCompleted = weeksData.reduce((s, w) => s + w.lessonsCompleted, 0);
+    // const studyTimeHours = 0;
 
     const handleSave = (data: { userName: string; userEmail: string; profilePicture?: string }) => {
       // update local state for immediate feedback

@@ -13,7 +13,7 @@ import Profile from './TeacherDashboard/Profile';
 export default function TeacherDashboard() {
   const { logout } = useAuth();
   const [activeView, setActiveView] = useState<'welcome' | 'content-generator' | 'material-base' | 'knowledge-base' | 'visual-aid' | 'lesson-planner' | 'game-generator' | 'saved-work' | 'profile'>('welcome');
-  const [institutionType, setInstitutionType] = useState<'school' | 'college'>('school');
+  const [institutionType] = useState<'school' | 'college'>('school');
 
   const getStoredName = () => {
     try {
