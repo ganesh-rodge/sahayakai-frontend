@@ -1,3 +1,5 @@
+import { Instagram, Facebook, Twitter, Phone, Send } from 'lucide-react';
+
 interface FooterProps {
   onNavigate?: (page: string) => void;
 }
@@ -52,21 +54,36 @@ export default function Footer({ onNavigate }: FooterProps) {
 
           <div className="text-center md:text-left">
             <h4 className="font-bold mb-4">Social</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
+              <ul className="space-y-2 text-gray-400 text-sm">
               <li>
-                <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Instagram</a>
+                <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors flex items-center gap-2">
+                  <Instagram className="w-4 h-4 text-accent" />
+                  <span>Instagram</span>
+                </a>
               </li>
               <li>
-                <a href="https://www.telegram.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Telegram</a>
+                <a href="https://www.telegram.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors flex items-center gap-2">
+                  <Send className="w-4 h-4 text-accent" />
+                  <span>Telegram</span>
+                </a>
               </li>
               <li>
-                <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Facebook</a>
+                <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors flex items-center gap-2">
+                  <Facebook className="w-4 h-4 text-accent" />
+                  <span>Facebook</span>
+                </a>
               </li>
               <li>
-                <a href="https://www.whatsapp.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">WhatsApp</a>
+                <a href="https://www.whatsapp.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-accent" />
+                  <span>WhatsApp</span>
+                </a>
               </li>
               <li>
-                <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Twitter</a>
+                <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors flex items-center gap-2">
+                  <Twitter className="w-4 h-4 text-accent" />
+                  <span>Twitter</span>
+                </a>
               </li>
             </ul>
           </div>
