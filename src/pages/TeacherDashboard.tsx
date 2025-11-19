@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../utils/auth';
+import { LogOut } from 'lucide-react';
 import ContentGenerator from './TeacherDashboard/ContentGenerator';
 import MaterialBase from './TeacherDashboard/MaterialBase';
 import KnowledgeBase from './TeacherDashboard/KnowledgeBase';
@@ -159,10 +160,11 @@ export default function TeacherDashboard() {
 
               <button
                 onClick={() => { try { logout(); } finally { window.location.href = '/'; } }}
-                className="px-3 py-2 rounded-md bg-red-500/20 text-sm text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
-                title="Logout"
+                title="Sign Out"
+                className="p-1 text-gray-400 hover:text-[#34ebc9] transition-colors"
+                aria-label="Sign out"
               >
-                Logout
+                <LogOut size={18} />
               </button>
             </div>
 
@@ -202,9 +204,10 @@ export default function TeacherDashboard() {
 
                     <button
                       onClick={() => { setIsMenuOpen(false); try { logout(); } finally { window.location.href = '/'; } }}
-                      className="w-full px-3 py-2 rounded-md text-sm bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                      className="w-full px-3 py-2 rounded-md text-sm bg-red-500/20 text-gray-400 border border-red-500/30 hover:text-[#34ebc9] hover:bg-red-500/30 transition-colors flex items-center gap-2"
                     >
-                      Logout
+                      <LogOut size={16} />
+                      <span>Logout</span>
                     </button>
                   </div>
                 </div>
