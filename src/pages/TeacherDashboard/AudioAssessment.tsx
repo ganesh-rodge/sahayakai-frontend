@@ -26,7 +26,7 @@ const SAMPLE_TEXTS: Record<string, string[]> = {
   ]
 };
 
-export default function AudioAssessment({ _onBack, onSave }: AudioAssessmentProps) {
+export default function AudioAssessment({ onSave }: AudioAssessmentProps) {
   const [language, setLanguage] = useState('English');
   const [gradeLevel, setGradeLevel] = useState('');
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'advanced'>('easy');
