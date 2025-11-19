@@ -275,7 +275,7 @@ export default function ForgotPasswordPage({ role: _role, onBack: _onBack }: Pro
               <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 text-green-300">
                 Password updated successfully for <span className="font-semibold">{email}</span>.
               </div>
-              <button onClick={onBack} className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-accent to-accent-light text-dark-primary font-semibold">Return to Login</button>
+              <button onClick={_onBack} className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-accent to-accent-light text-dark-primary font-semibold">Return to Login</button>
             </div>
           )}
         </motion.div>
