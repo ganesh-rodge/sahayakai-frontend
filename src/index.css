@@ -30,7 +30,9 @@
   img, video, canvas, svg { display: block; max-width: 100%; height: auto; }
   img { image-rendering: auto; }
   /* Mobile-friendly tap targets */
-  button { @apply select-none; }
+  button { @apply select-none cursor-pointer; }
+  /* Ensure anchors show pointer when clickable */
+  a { @apply cursor-pointer; }
   input, button, textarea, select { font: inherit; }
 
   /* Fluid typography helpers (opt-in classes) */

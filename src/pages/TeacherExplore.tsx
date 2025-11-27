@@ -188,7 +188,7 @@ export default function TeacherExplore({ onBack: _onBack, onGetStarted }: Teache
               Get Started Free
             </motion.button>
             <motion.button
-              onClick={onBack}
+              onClick={_onBack}
               className="px-8 py-4 rounded-lg font-bold text-lg border-2 border-accent text-accent bg-transparent"
               whileHover={{ scale: 1.05, backgroundColor: "#00d4aa", color: "#0a0a0f" }}
               whileTap={{ scale: 0.95 }}

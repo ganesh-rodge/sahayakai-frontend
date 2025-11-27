@@ -156,19 +156,12 @@ export default function HelpCenter({ onNavigate }: HelpCenterProps) {
           </h1>
           <p className="text-gray-400 text-lg mb-6">Find quick answers and detailed guides for students and teachers.</p>
 
-          <div className="max-w-2xl mx-auto">
-            <input
-              type="search"
-              placeholder="Search for help... (try keywords like 'signup', 'grading', 'analytics')"
-              className="w-full px-6 py-4 bg-dark-secondary border border-gray-700 rounded-lg focus:border-accent outline-none transition-colors text-lg"
-              aria-label="Search help"
-            />
-          </div>
+          {/* Search removed per request */}
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {CATEGORIES.map((category) => (
-            <section key={category.title} className="bg-dark-secondary border border-gray-800 rounded-lg p-6 hover:border-accent transition-all">
+            <section key={category.title} className="self-start bg-dark-secondary border border-gray-800 rounded-lg p-6 hover:border-accent transition-all">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-4xl">{category.icon}</span>
                 <h2 className="text-2xl font-bold">{category.title}</h2>
